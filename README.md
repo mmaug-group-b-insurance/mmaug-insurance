@@ -1,12 +1,12 @@
 # MMAUG GROUP B - INSURANCE PROJECT
 
-##Overview
+## Overview
 To be updated
 
-##Tech Stack 
+## Tech Stack 
 To be updated 
 
-##How to run
+## How to run
 1. git clone https://github.com/mmaug-group-b-insurance/mmaug-insurance.git
 2. cd mmaug-insurance
 
