@@ -60,3 +60,5 @@ storage/
 *.p12
 *.jks
 *.keystore
+
+application-local.yml
