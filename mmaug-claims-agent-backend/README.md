@@ -160,7 +160,7 @@ src/main/java/com/mmaug/claimsagent/
 | 2 | Core domain (users, customers, policies, claims) | ✅ |
 | 3 | Documents (upload, validation, storage) | ✅ |
 | 4 | Extraction (OCR, structuring, consolidation) | ✅ |
-| 5 | Agent (runs, steps, tools, guardrails) | ⏳ |
+| 5 | Agent (runs, steps, tools, guardrails) | ✅ |
 | 6 | Findings + summaries | ⏳ |
 | 7 | Human review | ⏳ |
 | 8 | Audit + retention | ⏳ |
