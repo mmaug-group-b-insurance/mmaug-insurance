@@ -1,64 +1,160 @@
-HELP.md
+# ---------------------------------------------------------------------------
+# Build artifacts
+# ---------------------------------------------------------------------------
 target/
-.mvn/wrapper/maven-wrapper.jar
+build/
+out/
+!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-### STS ###
-.apt_generated
+# ---------------------------------------------------------------------------
+# Maven
+# ---------------------------------------------------------------------------
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties.bak
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# ---------------------------------------------------------------------------
+# Gradle (future-proofing)
+# ---------------------------------------------------------------------------
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# ---------------------------------------------------------------------------
+# IDE — IntelliJ IDEA
+# ---------------------------------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
+
+# ---------------------------------------------------------------------------
+# IDE — Eclipse / STS
+# ---------------------------------------------------------------------------
+.settings/
 .classpath
-.factorypath
 .project
-.settings
+.apt_generated
+.apt_generated_tests
+.factorypath
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+# ---------------------------------------------------------------------------
+# IDE — VS Code
+# ---------------------------------------------------------------------------
+.vscode/
 
-### NetBeans ###
+# ---------------------------------------------------------------------------
+# IDE — NetBeans
+# ---------------------------------------------------------------------------
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# ---------------------------------------------------------------------------
+# Spring Boot — local profile overrides (may contain personal config)
+# ---------------------------------------------------------------------------
+application-local.yml
+application-local.yaml
+application-*-local.yml
+application-*-local.yaml
+application.local.yml
+application.local.yaml
 
-
-# Maven
-!.mvn/wrapper/maven-wrapper.jar
-
-# IDE
-.idea/
-.settings/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Environment
+# ---------------------------------------------------------------------------
+# Environment files — NEVER commit real secrets
+# ---------------------------------------------------------------------------
 .env
 .env.local
 .env.*.local
+.env.dev
+.env.test
+.env.prod
+!.env.example
 
-# Logs
-logs/
+# ---------------------------------------------------------------------------
+# Application runtime
+# ---------------------------------------------------------------------------
+*.pid
 *.log
+*.log.*
+logs/
+log/
 
-# Storage
+# ---------------------------------------------------------------------------
+# Local file storage (uploaded documents, quarantine, clean blob)
+# ---------------------------------------------------------------------------
 storage/
+uploads/
+blob/
+quarantine/
+clean/
 
-# Secrets
+# ---------------------------------------------------------------------------
+# Secrets & certificates
+# ---------------------------------------------------------------------------
 *.p12
 *.jks
 *.keystore
+*.key
+*.pem
+*.crt
+*.cer
+secrets/
+secret.properties
+keystore.properties
 
-application-local.yml
+# ---------------------------------------------------------------------------
+# OS artifacts
+# ---------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------------------
+# Test & coverage
+# ---------------------------------------------------------------------------
+*.exec
+*.hprof
+/coverage/
+/test-output/
+/surefire-reports/
+/failsafe-reports/
+
+# ---------------------------------------------------------------------------
+# H2 / local databases
+# ---------------------------------------------------------------------------
+*.mv.db
+*.trace.db
+*.db
+
+# ---------------------------------------------------------------------------
+# Docker local overrides
+# ---------------------------------------------------------------------------
+docker-compose.override.yml
+*.docker-compose.local.yml
+
+# ---------------------------------------------------------------------------
+# Spring Initializr / IDE helper (keep if you want the reference file)
+# ---------------------------------------------------------------------------
+# HELP.md
