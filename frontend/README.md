@@ -1,3 +1,4 @@
+
 # MMAUG Insurance Claims Agent — Frontend
 
 React + TypeScript frontend for the **MMAUG Insurance Claims Agent**. Provides a public marketing
@@ -760,3 +761,4 @@ src/
 ## License
 
 Training simulation for the MMAUG AI & DevOps Bootcamp. No production use.
+
