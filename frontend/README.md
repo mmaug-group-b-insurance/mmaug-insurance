@@ -760,5 +760,5 @@ src/
 
 ## License
 
-Training simulation for the MMAUG AI & DevOps Bootcamp. No production use.
+Proprietary — MMAUG Insurance Ltd.
 
