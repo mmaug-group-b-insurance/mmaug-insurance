@@ -3,6 +3,7 @@ package com.mmaug.claimsagent.agent.summary;
 import com.mmaug.claimsagent.agent.summary.dto.EvidenceRefResponse;
 import com.mmaug.claimsagent.agent.summary.dto.StatementResponse;
 import com.mmaug.claimsagent.agent.summary.dto.SummaryResponse;
+import com.mmaug.claimsagent.agent.summary.dto.SummaryVersionItem;
 import com.mmaug.claimsagent.common.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +47,18 @@ public class SummaryService {
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Summary version not found"));
         return toResponse(summary);
+    }
+
+    public List<SummaryVersionItem> listVersions(UUID claimId) {
+        return summaryRepository.findAllByClaimIdOrderByVersionNoDesc(claimId).stream()
+                .map(s -> SummaryVersionItem.builder()
+                        .summaryId(s.getId())
+                        .versionNo(s.getVersionNo())
+                        .generatedAt(s.getGeneratedAt())
+                        .headline(s.getHeadline())
+                        .overallConfidence(s.getOverallConfidence())
+                        .build())
+                .toList();
     }
 
     private SummaryResponse toResponse(ClaimSummary summary) {

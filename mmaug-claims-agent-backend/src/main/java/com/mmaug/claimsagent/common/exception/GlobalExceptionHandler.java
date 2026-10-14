@@ -80,6 +80,28 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "An unexpected error occurred", request, List.of());
     }
 
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResource(
+            org.springframework.web.servlet.resource.NoResourceFoundException ex,
+            HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, "NOT_FOUND",
+                "The requested resource was not found.", request, List.of());
+    }
+
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleTypeMismatch(
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request) {
+
+        String param = ex.getName();
+        String value = ex.getValue() != null ? ex.getValue().toString() : "null";
+        String required = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "value";
+        String message = "Invalid value for '" + param + "': '" + value
+                + "' is not a valid " + required + ".";
+
+        return build(HttpStatus.BAD_REQUEST, "INVALID_PARAMETER", message, request, List.of());
+    }
+
     private ApiError.FieldError toFieldError(FieldError fe) {
         return new ApiError.FieldError(fe.getField(), fe.getDefaultMessage());
     }

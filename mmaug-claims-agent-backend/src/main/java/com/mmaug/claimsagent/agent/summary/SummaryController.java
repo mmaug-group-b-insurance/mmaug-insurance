@@ -1,6 +1,7 @@
 package com.mmaug.claimsagent.agent.summary;
 
 import com.mmaug.claimsagent.agent.summary.dto.SummaryResponse;
+import com.mmaug.claimsagent.agent.summary.dto.SummaryVersionItem;
 import com.mmaug.claimsagent.common.exception.ApiError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "AI Summaries", description = "AI-generated claim summaries with typed statements and evidence references")
@@ -46,5 +48,19 @@ public class SummaryController {
     public ResponseEntity<SummaryResponse> get(@PathVariable UUID claimId,
                                                @RequestParam(required = false) Integer version) {
         return ResponseEntity.ok(summaryService.getVersion(claimId, version));
+    }
+
+    @Operation(
+            summary = "List summary versions",
+            description = "Returns the list of summary versions available for the claim, newest first. "
+                    + "Returns an empty list when no summaries exist.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Versions returned (may be empty)"),
+            @ApiResponse(responseCode = "403", description = "Not permitted",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    @GetMapping("/versions")
+    public ResponseEntity<List<SummaryVersionItem>> versions(@PathVariable UUID claimId) {
+        return ResponseEntity.ok(summaryService.listVersions(claimId));
     }
 }

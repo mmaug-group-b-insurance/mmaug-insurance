@@ -16,6 +16,7 @@ import com.mmaug.claimsagent.policy.PolicyService;
 import com.mmaug.claimsagent.security.CurrentUser;
 import com.mmaug.claimsagent.security.Role;
 import jakarta.persistence.criteria.Predicate;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -60,37 +61,61 @@ public class ClaimService {
             throw new ForbiddenException("Only claimants or officers may create claims");
         }
 
-        Claim claim = new Claim();
-        claim.setClaimNumber(numberGenerator.next());
-        claim.setStatus(ClaimStatus.DRAFT);
-        claim.setChannel(request.getChannel() != null ? request.getChannel() : ClaimChannel.WEB_PORTAL);
-        claim.setCreatedByUserId(UUID.fromString(user.userId()));
-        claim.setPolicyNumberStated(request.getPolicyNumber());
-        claim.setClaimantName(request.getClaimantName());
-        claim.setClaimantPhone(request.getClaimantPhone());
-        claim.setClaimantEmail(request.getClaimantEmail());
-        claim.setVehicleRegistration(request.getVehicleRegistration());
-        claim.setIncidentDate(request.getIncidentDate());
-        claim.setIncidentTime(request.getIncidentTime());
-        claim.setIncidentLocation(request.getIncidentLocation());
-        claim.setIncidentDescription(request.getIncidentDescription());
-        claim.setThirdPartyInvolved(request.getThirdPartyInvolved());
-        claim.setPoliceReportNumber(request.getPoliceReportNumber());
-        claim.setInjuriesReported(request.getInjuriesReported());
-        claim.setEstimatedAmount(request.getEstimatedAmount());
-        claim.setReportedAt(Instant.now());
+        // Retry loop guards against a rare concurrent-creation collision on
+        // the unique constraint uq_claim_number. The generator reads MAX(claim_number)
+        // from the DB, but two simultaneous transactions can still read the same
+        // value; the loser of the race retries with a fresh number.
+        int attempts = 0;
+        while (true) {
+            try {
+                Claim claim = new Claim();
+                claim.setClaimNumber(numberGenerator.next());
+                claim.setStatus(ClaimStatus.DRAFT);
+                claim.setChannel(request.getChannel() != null ? request.getChannel() : ClaimChannel.WEB_PORTAL);
+                claim.setCreatedByUserId(UUID.fromString(user.userId()));
+                claim.setPolicyNumberStated(request.getPolicyNumber());
+                claim.setClaimantName(request.getClaimantName());
+                claim.setClaimantPhone(request.getClaimantPhone());
+                claim.setClaimantEmail(request.getClaimantEmail());
+                claim.setVehicleRegistration(request.getVehicleRegistration());
+                claim.setIncidentDate(request.getIncidentDate());
+                claim.setIncidentTime(request.getIncidentTime());
+                claim.setIncidentLocation(request.getIncidentLocation());
+                claim.setIncidentDescription(request.getIncidentDescription());
+                claim.setThirdPartyInvolved(request.getThirdPartyInvolved());
+                claim.setPoliceReportNumber(request.getPoliceReportNumber());
+                claim.setInjuriesReported(request.getInjuriesReported());
+                claim.setEstimatedAmount(request.getEstimatedAmount());
+                claim.setReportedAt(Instant.now());
 
-        // Attempt to link to a policy — do not fail if not found; validation happens later.
-        policyService.findByNumber(request.getPolicyNumber()).ifPresent(policy -> {
-            claim.setPolicy(policy);
-            Customer customer = policy.getCustomer();
-            if (customer != null) {
-                claim.setCustomer(customer);
+                // Attempt to link to a policy — do not fail if not found; validation happens later.
+                policyService.findByNumber(request.getPolicyNumber()).ifPresent(policy -> {
+                    claim.setPolicy(policy);
+                    Customer customer = policy.getCustomer();
+                    if (customer != null) {
+                        claim.setCustomer(customer);
+                    }
+                });
+
+                // saveAndFlush forces the INSERT to run inside the try block,
+                // so the unique-constraint violation is caught here instead of
+                // at transaction commit time.
+                Claim saved = claimRepository.saveAndFlush(claim);
+                return claimMapper.toResponse(saved);
+            } catch (DataIntegrityViolationException e) {
+                if (++attempts >= 3 || !isClaimNumberCollision(e)) {
+                    throw e;
+                }
+                // Fall through and retry with a fresh number.
             }
-        });
+        }
+    }
 
-        Claim saved = claimRepository.save(claim);
-        return claimMapper.toResponse(saved);
+    private boolean isClaimNumberCollision(DataIntegrityViolationException e) {
+        Throwable root = e.getMostSpecificCause();
+        return root != null
+                && root.getMessage() != null
+                && root.getMessage().contains("uq_claim_number");
     }
 
     @Transactional(readOnly = true)
