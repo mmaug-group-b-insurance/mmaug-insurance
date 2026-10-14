@@ -15,6 +15,10 @@ import { AuditDetailsDrawer } from "./audit-details-drawer";
 import { formatRelativeTime } from "@/lib/utils";
 import type { AuditEvent } from "@/types/audit";
 
+// Accepts a canonical UUID (8-4-4-4-12 hex). Everything else is rejected
+// so the backend never receives a claim number where a UUID is required.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function AuditLogPage() {
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState({
@@ -47,9 +51,16 @@ export function AuditLogPage() {
       ),
     placeholderData: keepPreviousData,
     staleTime: 15_000,
+    retry: false,
   });
 
   const update = (key: keyof typeof filters, value: string) => {
+    // Guard claimId: only allow valid UUIDs. Anything else is cleared so the
+    // request never sends a claim number to an endpoint that expects a UUID.
+    if (key === "claimId" && value && !UUID_RE.test(value)) {
+      setFilters((f) => ({ ...f, claimId: "" }));
+      return;
+    }
     setFilters((f) => ({ ...f, [key]: value }));
     setPage(0);
   };
@@ -67,7 +78,11 @@ export function AuditLogPage() {
 
       <Card className="mb-4">
         <CardContent className="grid gap-3 p-4 md:grid-cols-3 lg:grid-cols-4">
-          <Input placeholder="Claim ID" value={filters.claimId} onChange={(e) => update("claimId", e.target.value)} />
+          <Input
+            placeholder="Claim UUID"
+            value={filters.claimId}
+            onChange={(e) => update("claimId", e.target.value.trim())}
+          />
           <Input placeholder="Actor user ID" value={filters.actorUserId} onChange={(e) => update("actorUserId", e.target.value)} />
           <Input placeholder="Action" value={filters.action} onChange={(e) => update("action", e.target.value)} />
           <Input placeholder="Outcome" value={filters.outcome} onChange={(e) => update("outcome", e.target.value)} />
