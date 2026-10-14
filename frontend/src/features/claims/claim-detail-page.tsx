@@ -70,6 +70,23 @@ export function ClaimDetailPage() {
 
   if (!claim) return <Navigate to="/app/claims" replace />;
 
+  if (!claim.id) {
+  return (
+    <>
+      <Button variant="ghost" onClick={() => navigate("/app/claims")} className="mb-4">
+        <ArrowLeft /> Back to claims
+      </Button>
+      <Alert variant="destructive">
+        <AlertTriangle />
+        <AlertTitle>Malformed claim response</AlertTitle>
+        <AlertDescription>
+          The backend returned a claim without an id. Check the browser network tab for the raw response.
+        </AlertDescription>
+      </Alert>
+    </>
+  );
+}
+
   const canReview = hasRole(["CLAIMS_OFFICER"]);
   const canAnalyse = hasRole(["CLAIMS_OFFICER"]);
 
@@ -103,7 +120,15 @@ export function ClaimDetailPage() {
           />
           <Field label="Vehicle" value={<span className="font-mono text-xs">{claim.vehicleRegistration}</span>} />
           <Field label="Incident date" value={<span className="text-sm">{claim.incidentDate}</span>} />
-          <Field label="Channel" value={<span className="text-sm">{claim.channel.replace(/_/g, " ")}</span>} />
+          {/* <Field label="Channel" value={<span className="text-sm">{claim.channel.replace(/_/g, " ")}</span>} /> */}
+          <Field
+  label="Channel"
+  value={
+    <span className="text-sm">
+      {claim.channel ? claim.channel.replace(/_/g, " ") : "—"}
+    </span>
+  }
+/>
           <Field
             label="Estimated amount"
             value={

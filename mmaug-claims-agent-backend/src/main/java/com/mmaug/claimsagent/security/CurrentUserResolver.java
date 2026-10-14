@@ -1,5 +1,7 @@
+
 package com.mmaug.claimsagent.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +19,9 @@ import java.util.stream.Collectors;
 @Component
 public class CurrentUserResolver implements HandlerMethodArgumentResolver {
 
+    @Value("${app.security.enabled:true}")
+    private boolean securityEnabled;
+
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.getParameterType().equals(CurrentUser.class);
@@ -25,6 +30,23 @@ public class CurrentUserResolver implements HandlerMethodArgumentResolver {
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+
+        // ------------------------------------------------------------------
+        // Dev mode: security is disabled. Return a synthetic user with all
+        // roles so controllers, services, and audit logging can proceed.
+        //
+        // This branch never runs in production because application-local.yml
+        // sets app.security.enabled=false only for the local profile.
+        // ------------------------------------------------------------------
+        if (!securityEnabled) {
+            return new CurrentUser(
+                    "00000000-0000-0000-0000-000000000001",
+                    "dev-oid",
+                    "dev.user@local",
+                    Set.of(Role.CLAIMANT, Role.CLAIMS_OFFICER, Role.AUDITOR, Role.ADMIN)
+            );
+        }
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
             Jwt jwt = jwtAuth.getToken();

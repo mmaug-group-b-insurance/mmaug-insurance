@@ -1,3 +1,5 @@
+# application.yml
+
 spring:
   application:
     name: mmaug-claims-agent-backend
@@ -75,6 +77,7 @@ springdoc:
 
 app:
   security:
+    enabled: ${APP_SECURITY_ENABLED:true}
     audience: ${ENTRA_AUDIENCE:api://mmaug-claims-api}
     cors:
       allowed-origins:

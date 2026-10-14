@@ -1,7 +1,11 @@
+
 package com.mmaug.claimsagent.common.crypto;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -9,9 +13,20 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 
+/**
+ * AES/GCM converter for PII columns.
+ *
+ * Ciphertext format: Base64( IV (12 bytes) || ciphertext || GCM tag (16 bytes) )
+ *
+ * In non-production environments, plaintext values that were seeded directly
+ * into the database are returned as-is rather than causing decryption to fail.
+ * This keeps local development working when the seed SQL inserts plaintext PII.
+ */
 @Converter
+@Component
 public class AttributeEncryptor implements AttributeConverter<String, String> {
 
     private static final String AES_GCM = "AES/GCM/NoPadding";
@@ -20,17 +35,36 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
 
     private final SecretKeySpec keySpec;
     private final SecureRandom secureRandom = new SecureRandom();
+    private final boolean lenientOnPlaintext;
 
-    public AttributeEncryptor() {
-        String secret = System.getenv("PII_ENCRYPTION_KEY");
+    public AttributeEncryptor(
+            Environment environment,
+            @Value("${app.crypto.pii-key:}") String configuredKey) {
+
+        boolean productionProfile = Arrays.stream(environment.getActiveProfiles())
+                .anyMatch(p -> p.equalsIgnoreCase("prod") || p.equalsIgnoreCase("production"));
+
+        String secret = configuredKey;
         if (secret == null || secret.isBlank()) {
-            // Development/test fallback — production must set PII_ENCRYPTION_KEY
+            secret = System.getenv("PII_ENCRYPTION_KEY");
+        }
+
+        if (secret == null || secret.isBlank()) {
+            if (productionProfile) {
+                throw new IllegalStateException(
+                        "PII_ENCRYPTION_KEY (or app.crypto.pii-key) must be set in production.");
+            }
+            // Local/dev/test fallback only.
             secret = "mmaug-dev-only-pii-key-32-bytes!!";
         }
+
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         byte[] normalized = new byte[32];
         System.arraycopy(keyBytes, 0, normalized, 0, Math.min(keyBytes.length, 32));
         this.keySpec = new SecretKeySpec(normalized, "AES");
+
+        // Only tolerate plaintext rows when we are not running in production.
+        this.lenientOnPlaintext = !productionProfile;
     }
 
     @Override
@@ -54,8 +88,31 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
     @Override
     public String convertToEntityAttribute(String dbData) {
         if (dbData == null) return null;
+
+        // Fast path: try to decode as Base64. If it fails, this is almost
+        // certainly a plaintext value inserted by a seed script — return as-is
+        // when we are not in production.
+        byte[] decoded;
         try {
-            byte[] decoded = Base64.getDecoder().decode(dbData);
+            decoded = Base64.getDecoder().decode(dbData);
+        } catch (IllegalArgumentException notBase64) {
+            if (lenientOnPlaintext) {
+                return dbData;
+            }
+            throw new IllegalStateException(
+                    "Failed to decrypt attribute: value is not valid Base64 ciphertext.", notBase64);
+        }
+
+        // Very short payloads cannot be a valid IV + ciphertext + tag.
+        if (decoded.length < GCM_IV_LENGTH + GCM_TAG_LENGTH) {
+            if (lenientOnPlaintext) {
+                return dbData;
+            }
+            throw new IllegalStateException(
+                    "Failed to decrypt attribute: ciphertext too short.");
+        }
+
+        try {
             ByteBuffer buffer = ByteBuffer.wrap(decoded);
             byte[] iv = new byte[GCM_IV_LENGTH];
             buffer.get(iv);
@@ -65,6 +122,12 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
             cipher.init(Cipher.DECRYPT_MODE, keySpec, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
             return new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
         } catch (Exception e) {
+            // The value decoded as Base64 but did not authenticate. That means
+            // either tampering, a wrong key, or a value that happened to look
+            // like Base64. In non-production, fall back to the raw value.
+            if (lenientOnPlaintext) {
+                return dbData;
+            }
             throw new IllegalStateException("Failed to decrypt attribute", e);
         }
     }

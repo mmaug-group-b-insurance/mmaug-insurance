@@ -1,8 +1,11 @@
+
+
 package com.mmaug.claimsagent.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -37,6 +41,7 @@ public class SecurityConfig {
     };
 
     private final JwtAuthConverter jwtAuthConverter;
+    private final Environment environment;
 
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri:}")
     private String issuerUri;
@@ -44,12 +49,35 @@ public class SecurityConfig {
     @Value("${app.security.audience:}")
     private String audience;
 
-    public SecurityConfig(JwtAuthConverter jwtAuthConverter) {
+    @Value("${app.security.enabled:true}")
+    private boolean securityEnabled;
+
+    public SecurityConfig(JwtAuthConverter jwtAuthConverter, Environment environment) {
         this.jwtAuthConverter = jwtAuthConverter;
+        this.environment = environment;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // Refuse to start with security disabled in a production profile.
+        boolean productionProfileActive = Arrays.stream(environment.getActiveProfiles())
+                .anyMatch(p -> p.equalsIgnoreCase("prod") || p.equalsIgnoreCase("production"));
+        if (!securityEnabled && productionProfileActive) {
+            throw new IllegalStateException(
+                    "app.security.enabled=false is not permitted when a production profile is active."
+            );
+        }
+
+        if (!securityEnabled) {
+            // Dev mode: permit everything, skip JWT decoding entirely.
+            http
+                    .csrf(csrf -> csrf.disable())
+                    .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                    .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+            return http.build();
+        }
+
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -70,7 +98,6 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
         if (issuerUri == null || issuerUri.isBlank()) {
-            // Development/test fallback — production must set ENTRA_ISSUER_URI
             return token -> {
                 throw new IllegalStateException("JWT issuer URI not configured. Set ENTRA_ISSUER_URI.");
             };
