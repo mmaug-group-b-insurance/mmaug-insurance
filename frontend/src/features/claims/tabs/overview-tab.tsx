@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, AlertTriangle, Activity, Bot } from "lucide-react";
+import { FileText, AlertTriangle, Activity } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,6 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { documentsService } from "@/services/documents";
 import { findingsService } from "@/services/findings";
 import { agentRunsService } from "@/services/agent-runs";
-import { ClaimStatusBadge } from "../claim-status-badge";
 import { formatRelativeTime } from "@/lib/utils";
 import type { Claim } from "@/types/claim";
 

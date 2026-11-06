@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, Filter } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -10,10 +8,9 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { findingsService } from "@/services/findings";
 import { useAuth } from "@/features/auth/use-auth";
-import { SeverityBadge } from "../severity-badge";
 import { FindingItem } from "../finding-item";
 import type { Claim } from "@/types/claim";
-import type { Finding, FindingType, Severity } from "@/types/finding";
+import type { FindingType, Severity } from "@/types/finding";
 
 const SEVERITIES: Severity[] = ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"];
 const TYPES: FindingType[] = [

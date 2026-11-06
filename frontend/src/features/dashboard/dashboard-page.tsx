@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Activity, AlertTriangle, ArrowRight, Bot, ClipboardCheck, FileText, PlusCircle, TrendingUp,
+  Activity, AlertTriangle, ArrowRight, ClipboardCheck, FileText, PlusCircle, TrendingUp
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

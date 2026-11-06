@@ -44,6 +44,15 @@ describe("createClaimSchema", () => {
     expect(r.success).toBe(true);
   });
 
+  it.each([undefined, "", Number.NaN])("keeps an omitted or blank estimate unknown (%s)", (estimatedAmount) => {
+    const result = createClaimSchema.parse({ ...valid, estimatedAmount });
+    expect(result.estimatedAmount).toBeUndefined();
+  });
+
+  it("normalizes a decimal estimate from form text for the API", () => {
+    expect(createClaimSchema.parse({ ...valid, estimatedAmount: "125.50" }).estimatedAmount).toBe(125.5);
+  });
+
   it("rejects short description", () => {
     const r = createClaimSchema.safeParse({ ...valid, incidentDescription: "too short" });
     expect(r.success).toBe(false);

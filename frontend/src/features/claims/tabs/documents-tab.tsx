@@ -44,7 +44,7 @@ export function ClaimDocumentsTab({ claim }: { claim: Claim }) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ClaimDocument | null>(null);
   const [extractionTarget, setExtractionTarget] = useState<ClaimDocument | null>(null);
-  const [pending, setPending] = useState<PendingFile[]>([]);
+  const [, setPending] = useState<PendingFile[]>([]);
   const dropzoneRef = useRef<HTMLDivElement>(null);
 
   const docsQuery = useQuery({

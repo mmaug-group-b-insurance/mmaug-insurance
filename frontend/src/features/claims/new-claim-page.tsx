@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Send } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -16,9 +16,9 @@ import { PageHeader } from "@/components/layout";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FileDropzone } from "@/features/documents/file-dropzone";
 import { claimsService } from "@/services/claims";
-import { createClaimSchema, type CreateClaimFormValues } from "@/schemas/claim-schema";
+import { createClaimSchema, type CreateClaimFormInput, type CreateClaimFormValues } from "@/schemas/claim-schema";
 import { ApiRequestError } from "@/lib/api-client";
-import type { ClaimDocument, DocumentType } from "@/types/document";
+import type { DocumentType } from "@/types/document";
 
 export function NewClaimPage() {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ export function NewClaimPage() {
   const [createdClaimId, setCreatedClaimId] = useState<string | null>(null);
   const [pendingFiles, setPendingFiles] = useState<Array<{ file: File; documentType: DocumentType }>>([]);
 
-  const form = useForm<CreateClaimFormValues>({
+  const form = useForm<CreateClaimFormInput, unknown, CreateClaimFormValues>({
     resolver: zodResolver(createClaimSchema),
     defaultValues: {
       policyNumber: "",
