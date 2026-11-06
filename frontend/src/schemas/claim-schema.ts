@@ -38,8 +38,10 @@ export const createClaimSchema = z.object({
       return typeof v === "number" ? v : Number(v);
     })
     .refine((v) => v === undefined || v >= 0, "Must be zero or greater")
-    .refine((v) => v === undefined || /^\d+(\.\d{1,2})?$/.test(String(v)), "Max two decimal places"),
+    .refine((v) => v === undefined || /^\d+(\.\d{1,2})?$/.test(String(v)), "Max two decimal places")
+    .optional(),
 });
 
 export type CreateClaimFormValues = z.infer<typeof createClaimSchema>;
+export type CreateClaimFormInput = z.input<typeof createClaimSchema>;
 export { policyNumberRegex, e164Regex };

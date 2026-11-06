@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Menu, X, Moon, Sun, ArrowRight } from "lucide-react";
+import { Menu, Moon, Sun, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle } from "@/components/ui/sheet";
 import { useTheme } from "@/components/theme-provider";
@@ -18,7 +18,7 @@ const navItems = [
 export function PublicLayout({ children }: { children: ReactNode }) {
   const { resolved, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
-  const location = useLocation();
+  useLocation();
   const { isAuthenticated } = useAuth();
 const portalTo = isAuthenticated ? "/app" : "/login";
 

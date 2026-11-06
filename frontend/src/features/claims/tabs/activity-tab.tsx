@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Activity, Bot, FileText, ClipboardCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorAlert } from "@/components/ui/error-alert";
@@ -89,7 +88,7 @@ export function ClaimActivityTab({ claim }: { claim: Claim }) {
                   <span className="text-[10px] text-muted-foreground">{formatRelativeTime(e.at)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">{e.detail}</p>
-                {e.href && (
+                {e.kind === "run" && (
                   <Link to={e.href} className="mt-1 inline-block text-xs text-primary hover:underline">
                     Open run →
                   </Link>

@@ -42,7 +42,7 @@ export function useAuth() {
   const { instance, inProgress } = useMsal();
   const accounts = useAccounts();
 
-  const account: AccountInfo | null = isAuthBypassEnabled ? BYPASS_ACCOUNT : accounts[0] ?? null;
+  const account: AccountInfo | null = isAuthBypassEnabled ? BYPASS_ACCOUNT : accounts.at(0) ?? null;
   const isAuthenticated = Boolean(account);
 
   const roles = useMemo<Role[]>(() => getUserRoles(account) as Role[], [account]);

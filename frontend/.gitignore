@@ -128,3 +128,7 @@ secrets/
 # Frontend-only repo. Backend lives in a sibling folder.
 # Ignore generated API clients if you add codegen later.
 src/generated/
+# CI evidence is retained as workflow artifacts, not source.
+/test-results.xml
+/npm-audit.json
+/dependency-lock-sha256.txt

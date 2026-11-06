@@ -105,7 +105,7 @@ import { env } from "@/lib/env";
 export function LoginPage() {
   const { instance } = useMsal();
   const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? "/app";
   const [busy, setBusy] = useState(false);

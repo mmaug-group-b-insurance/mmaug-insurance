@@ -2,7 +2,7 @@ import { PublicLayout } from "./public-layout";
 import {
   FileText, Layers, Search, Bot, ClipboardCheck, Activity, Users, Lock, Eye, ScrollText,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 const groups = [

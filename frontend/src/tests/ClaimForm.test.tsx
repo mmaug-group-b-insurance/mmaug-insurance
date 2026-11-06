@@ -54,7 +54,7 @@ describe("NewClaimPage", () => {
     await user.click(screen.getByRole("button", { name: /submit claim/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/POL-MT-######/)).toBeInTheDocument();
+      expect(screen.getByText(/^Must match POL-MT-######/)).toBeInTheDocument();
     });
   });
 });
