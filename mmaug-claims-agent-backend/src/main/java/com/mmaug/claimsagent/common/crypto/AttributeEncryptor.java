@@ -21,7 +21,7 @@ import java.util.Base64;
  *
  * Ciphertext format: Base64( IV (12 bytes) || ciphertext || GCM tag (16 bytes) )
  *
- * In non-production environments, plaintext values that were seeded directly
+ * In explicit local/dev/test environments, plaintext values that were seeded directly
  * into the database are returned as-is rather than causing decryption to fail.
  * This keeps local development working when the seed SQL inserts plaintext PII.
  */
@@ -32,6 +32,7 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
     private static final String AES_GCM = "AES/GCM/NoPadding";
     private static final int GCM_IV_LENGTH = 12;
     private static final int GCM_TAG_LENGTH = 128;
+    private static final String DEVELOPMENT_KEY = "mmaug-dev-only-pii-key-32-bytes!!";
 
     private final SecretKeySpec keySpec;
     private final SecureRandom secureRandom = new SecureRandom();
@@ -41,30 +42,35 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
             Environment environment,
             @Value("${app.crypto.pii-key:}") String configuredKey) {
 
-        boolean productionProfile = Arrays.stream(environment.getActiveProfiles())
-                .anyMatch(p -> p.equalsIgnoreCase("prod") || p.equalsIgnoreCase("production"));
+        String[] profiles = environment.getActiveProfiles();
+        boolean localOnly = profiles.length > 0 && Arrays.stream(profiles)
+                .allMatch(p -> p.equalsIgnoreCase("local") || p.equalsIgnoreCase("dev")
+                        || p.equalsIgnoreCase("test"));
 
         String secret = configuredKey;
         if (secret == null || secret.isBlank()) {
-            secret = System.getenv("PII_ENCRYPTION_KEY");
+            secret = environment.getProperty("PII_ENCRYPTION_KEY");
         }
 
         if (secret == null || secret.isBlank()) {
-            if (productionProfile) {
+            if (!localOnly) {
                 throw new IllegalStateException(
-                        "PII_ENCRYPTION_KEY (or app.crypto.pii-key) must be set in production.");
+                        "PII_ENCRYPTION_KEY (or app.crypto.pii-key) must be set outside local/dev/test.");
             }
             // Local/dev/test fallback only.
-            secret = "mmaug-dev-only-pii-key-32-bytes!!";
+            secret = DEVELOPMENT_KEY;
         }
 
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (!localOnly && (keyBytes.length != 32 || DEVELOPMENT_KEY.equals(secret))) {
+            throw new IllegalStateException("PII encryption requires a non-development key of exactly 32 UTF-8 bytes.");
+        }
+        // Preserve legacy local key normalization and ciphertext format; this is not a key rotation.
         byte[] normalized = new byte[32];
         System.arraycopy(keyBytes, 0, normalized, 0, Math.min(keyBytes.length, 32));
         this.keySpec = new SecretKeySpec(normalized, "AES");
 
-        // Only tolerate plaintext rows when we are not running in production.
-        this.lenientOnPlaintext = !productionProfile;
+        this.lenientOnPlaintext = localOnly;
     }
 
     @Override
@@ -91,7 +97,7 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
 
         // Fast path: try to decode as Base64. If it fails, this is almost
         // certainly a plaintext value inserted by a seed script — return as-is
-        // when we are not in production.
+        // only in explicit local/dev/test profiles.
         byte[] decoded;
         try {
             decoded = Base64.getDecoder().decode(dbData);
@@ -104,7 +110,7 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
         }
 
         // Very short payloads cannot be a valid IV + ciphertext + tag.
-        if (decoded.length < GCM_IV_LENGTH + GCM_TAG_LENGTH) {
+        if (decoded.length < GCM_IV_LENGTH + GCM_TAG_LENGTH / Byte.SIZE) {
             if (lenientOnPlaintext) {
                 return dbData;
             }
@@ -124,7 +130,7 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
         } catch (Exception e) {
             // The value decoded as Base64 but did not authenticate. That means
             // either tampering, a wrong key, or a value that happened to look
-            // like Base64. In non-production, fall back to the raw value.
+            // like Base64. Only explicit local/dev/test profiles allow this fallback.
             if (lenientOnPlaintext) {
                 return dbData;
             }

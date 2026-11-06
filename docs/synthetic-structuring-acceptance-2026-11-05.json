@@ -1,0 +1,48 @@
+{
+  "fieldChecks": 110,
+  "fixtureCount": 10,
+  "results": [
+    {
+      "fixture": "complete-labelled-synthetic",
+      "status": "passed"
+    },
+    {
+      "fixture": "second-page-labels",
+      "status": "passed"
+    },
+    {
+      "fixture": "missing-date-unknown",
+      "status": "passed"
+    },
+    {
+      "fixture": "empty-label-no-borrowing",
+      "status": "passed"
+    },
+    {
+      "fixture": "source-policy-format-preserved",
+      "status": "passed"
+    },
+    {
+      "fixture": "unsupported-narrative-unknown",
+      "status": "passed"
+    },
+    {
+      "fixture": "instruction-flagged",
+      "status": "passed"
+    },
+    {
+      "fixture": "blank-evidence",
+      "status": "passed"
+    },
+    {
+      "fixture": "case-whitespace-and-page",
+      "status": "passed"
+    },
+    {
+      "fixture": "conflicting-source-date-preserved",
+      "status": "passed"
+    }
+  ],
+  "scope": "Offline structuring regression; not live OCR/model accuracy or a holdout evaluation",
+  "fixtureSha256": "8f62bd17eeff3eb25a4966aada88474e3fc65ed529bb6d24d8365b92d006c7b7"
+}

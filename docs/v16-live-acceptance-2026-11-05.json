@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-05",
+  "claimNumber": "CLM-2026-000005",
+  "claimId": "a0148160-e045-43b3-8f45-c2b2ace46a7b",
+  "runId": "f5794298-97b6-4283-ae2d-dd51598fdada",
+  "runStatus": "ESCALATED",
+  "summaryId": "4e12e031-f49b-429c-b137-d20563aa5947",
+  "summaryVersion": 1,
+  "extractionId": "d8679af4-37a4-48ee-bd91-2fb29484b03c",
+  "ocrStatus": "SUCCEEDED",
+  "model": "azure-openai/gpt-6.1-sol",
+  "tokensIn": 544,
+  "tokensOut": 85,
+  "inputSnapshotSha256": "1a1873fe2c795a05f5cc670171a10c5ef3fc8978f87939bd87609ece4f768bcf",
+  "statementCount": 14,
+  "evidenceReferencesChecked": true,
+  "findings": 3,
+  "findingTypes": [
+    "VEHICLE_MISMATCH",
+    "POLICY_INACTIVE_ON_DATE",
+    "CONTRADICTION"
+  ],
+  "idempotencyReplaySameRun": true,
+  "priorV4Unchanged": true,
+  "humanReview": "User submitted ACKNOWLEDGED for exact summary v1; mechanics verified; comment Working test is not business sign-off",
+  "limitations": [
+    "Single known synthetic fixture; not independent accuracy evaluation",
+    "Local authentication/scanning and synthetic lookup data; not staging acceptance",
+    "Transaction absence verified by automated integration tests, not instrumented during this live call"
+  ],
+  "reviewVerification": {
+    "reviewId": "8f15ab8f-2a0c-4e3a-92fb-a0f4d3ae9b06",
+    "summaryId": "4e12e031-f49b-429c-b137-d20563aa5947",
+    "reviewedAt": "2026-11-05T08:16:07.004038Z",
+    "outcome": "ACKNOWLEDGED",
+    "comment": "Working test",
+    "agreedWithEscalation": false,
+    "unresolvedFindings": 3,
+    "identity": "local preview officer; not real Entra acceptance"
+  }
+}

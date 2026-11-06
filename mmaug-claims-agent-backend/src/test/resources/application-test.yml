@@ -1,7 +1,12 @@
 spring:
   datasource:
-    url: jdbc:tc:postgresql:16:///mmaug_claims
+    url: jdbc:tc:postgresql:16-alpine:///mmaug_claims_test
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: test
+    password: test
+    hikari:
+      minimum-idle: 0
+      maximum-pool-size: 2
   jpa:
     show-sql: false
   flyway:

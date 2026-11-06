@@ -40,6 +40,19 @@ public class AgentRun extends BaseEntity {
     @Column(name = "correlation_id", length = 64)
     private String correlationId;
 
+    @Column(name = "retry_of_run_id")
+    private UUID retryOfRunId;
+
+    @Column(name = "expires_at")
+    private Instant expiresAt;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "input_snapshot", columnDefinition = "jsonb")
+    private String inputSnapshot;
+
+    @Column(name = "input_snapshot_sha256", length = 64)
+    private String inputSnapshotSha256;
+
     @Column(name = "prompt_version", length = 20)
     private String promptVersion;
 

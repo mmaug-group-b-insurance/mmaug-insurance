@@ -1,0 +1,180 @@
+{
+  "date": "2026-11-04",
+  "mode": "Isolated PostgreSQL 18, mocked OCR, real security chain with test JWTs",
+  "suites": [
+    {
+      "name": "com.mmaug.claimsagent.agent.AgentRunResponsesTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.agent.ClaimsAgentOrchestratorTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.agent.guardrails.EvidenceVerifierTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.agent.guardrails.ForbiddenClaimsFilterTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.agent.guardrails.PromptInjectionDetectorTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.agent.summary.GroundedSummaryBuilderTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.agent.tools.CasePolicyLookupTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.agent.tools.CaseSupportingLookupsTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.ArchitectureTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.config.StagingSafetyGuardTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.document.DocumentUploadSafetyTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.document.FileValidatorTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.extraction.AzureDocumentIntelligenceClientTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.extraction.AzureOcrLiveTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "name": "com.mmaug.claimsagent.extraction.ExtractionServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.extraction.FactConsolidatorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.extraction.StructuringServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.extraction.UploadExtractionFlowTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.GroundedWorkflowIntegrationTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.MmaugClaimsAgentBackendApplicationTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.review.ReviewOutcomeBoundaryTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.review.ReviewVersionIntegrityTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.security.ApiAudienceValidatorTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.mmaug.claimsagent.validation.PolicyEvidenceValidatorTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "tests": 86.0,
+  "failures": 0.0,
+  "errors": 0.0,
+  "skipped": 1.0,
+  "previewDatabaseChanged": false,
+  "liveAzureCalls": false
+}

@@ -14,6 +14,10 @@ public interface ClaimRepository extends JpaRepository<Claim, UUID>, JpaSpecific
 
     Optional<Claim> findByClaimNumber(String claimNumber);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select c from Claim c where c.id = :id")
+    Optional<Claim> findForDocumentUpload(@Param("id") UUID id);
+
     long countByCreatedByUserId(UUID userId);
 
     /**

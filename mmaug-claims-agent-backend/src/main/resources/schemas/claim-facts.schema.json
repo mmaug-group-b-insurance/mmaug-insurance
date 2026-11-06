@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mmaug:claim-facts:v1",
+  "title": "Claim facts extraction v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "documentId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "schemaVersion": {
+      "const": "v1"
+    },
+    "injectionSuspected": {
+      "type": "boolean"
+    },
+    "injectionNotes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "policyNumber": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "policyholderName": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "driverName": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "driverLicenceNumber": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "driverDateOfBirth": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "vehicleRegistration": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "vehicleMake": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "vehicleModel": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "vehicleYear": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "incidentDate": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "incidentTime": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "incidentLocation": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "incidentDescription": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "thirdPartyInvolved": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "policeReportNumber": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "policeStation": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "injuriesReported": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "injuryDescription": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "damageDescription": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "estimatedRepairCost": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "currency": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "garageName": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "estimateReference": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "estimateDate": {
+      "$ref": "#/$defs/fieldValue"
+    },
+    "damagedAreas": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/$defs/fieldValue"
+      }
+    },
+    "witnesses": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/$defs/fieldValue"
+      }
+    }
+  },
+  "required": [
+    "documentId",
+    "schemaVersion",
+    "injectionSuspected"
+  ],
+  "$defs": {
+    "fieldValue": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sourceDocumentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "snippet": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "value",
+        "sourceDocumentId"
+      ]
+    }
+  }
+}

@@ -19,10 +19,10 @@ springdoc:
 
 app:
   ai:
-    endpoint: ""
-    deployment: ""
+    endpoint: ${AI_ENDPOINT:}
+    deployment: ${AI_DEPLOYMENT:}
   docintel:
-    endpoint: ""
+    endpoint: ${DOCINTEL_ENDPOINT:}
   security:
     enabled: false
 

@@ -1,0 +1,38 @@
+{
+  "verifiedAtUtc": "2026-11-06T12:12:39.4176784Z",
+  "baseCommit": "506e04a6423ed7ef460af4de515a2c3104b761e9",
+  "uncommittedChanges": true,
+  "imageBuild": "passed",
+  "imageTag": "mmaug-backend:ci",
+  "platform": "linux/amd64",
+  "dockerServerVersion": "29.6.1",
+  "imageJarSha256": "84dc71aaaf98406317089f041b4ae6cbda16ee16343d3908c0a9e57450e40914",
+  "smoke": {
+    "imageId": "sha256:487ebfcba0311936dbb35f844bcc3e498a1cb6e92627682c57aa862f9582d7f9",
+    "runtimeUid": 999,
+    "readiness": 200,
+    "anonymousClaims": 401,
+    "anonymousMetrics": 401,
+    "allowedPreflight": 200,
+    "deniedPreflight": 403,
+    "readOnlyRoot": true,
+    "providerCalls": false,
+    "scope": "Synthetic local-profile container smoke; not Entra or Azure staging acceptance"
+  },
+  "cleanup": {
+    "remainingSmokeContainers": 0,
+    "remainingSmokeNetworks": 0
+  },
+  "liveProviderCalls": false,
+  "frontendChanged": false,
+  "azureResourcesChanged": false,
+  "remoteGitHubCiRun": false,
+  "deployed": false,
+  "limitations": [
+    "Synthetic local-profile image acceptance only; no Entra or Azure service validation",
+    "Transient Git Bash fork/resource errors during startup polling; all acceptance checks subsequently passed",
+    "Source remains uncommitted; image is a local candidate, not a published release"
+  ],
+  "buildLog": "C:\\Users\\fumeh\\.cache\\mmaug-preview\\container-build-20261106.log",
+  "smokeLog": "C:\\Users\\fumeh\\.cache\\mmaug-preview\\container-smoke-accepted-20261106.log"
+}

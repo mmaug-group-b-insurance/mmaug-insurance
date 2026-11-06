@@ -30,7 +30,7 @@ public class FileValidator {
                     new byte[]{0x4D, 0x4D, 0x00, 0x2A})                             // TIFF (BE)
     );
 
-    public void validate(MultipartFile file, long existingDocumentCount) {
+    public String validate(MultipartFile file, long existingDocumentCount) {
         if (file == null || file.isEmpty()) {
             throw new UnsafeFileException("File is empty");
         }
@@ -55,13 +55,19 @@ public class FileValidator {
 
         byte[] head = readHead(file, 16);
         String normalizedExt = "jpeg".equals(extension) ? "jpg" : extension;
-        if ("tif".equals(normalizedExt)) {
-            normalizedExt = "tif";
-        }
+        if ("tiff".equals(normalizedExt)) normalizedExt = "tif";
 
         if (!matchesMagic(head, normalizedExt)) {
             throw new UnsafeFileException("File content does not match the declared extension");
         }
+        // Ignore caller-provided MIME labels after verifying the extension/signature pair.
+        return switch (normalizedExt) {
+            case "pdf" -> "application/pdf";
+            case "jpg" -> "image/jpeg";
+            case "png" -> "image/png";
+            case "tif" -> "image/tiff";
+            default -> throw new UnsafeFileException("Unsupported file type");
+        };
     }
 
     private String extractExtension(String filename) {

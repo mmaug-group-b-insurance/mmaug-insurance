@@ -1,13 +1,10 @@
 package com.mmaug.claimsagent;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
+/** Compatibility launcher; ClaimsAgentApplication owns Spring Boot configuration. */
 public class MmaugClaimsAgentBackendApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MmaugClaimsAgentBackendApplication.class, args);
+        ClaimsAgentApplication.main(args);
     }
 
 }

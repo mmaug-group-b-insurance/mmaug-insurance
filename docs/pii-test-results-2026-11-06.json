@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-06",
+  "backendTests": {
+    "run": 156,
+    "passed": 154,
+    "failures": 0,
+    "errors": 0,
+    "skippedLive": 2
+  },
+  "newRegressionChecks": {
+    "cryptoUnitCases": 10,
+    "httpCreateReopenListAndEncryptedColumns": "passed"
+  },
+  "jarSha256": "DBD740C51FE92BC2AF8401A1EDFFF40B7D15F73AE77793FAEB6B622BDB5779E0",
+  "executableJarBuild": "passed",
+  "isolatedJarSmoke": {
+    "testedAtUtc": "2026-11-06T11:42:41.1774078Z",
+    "jarSha256": "DBD740C51FE92BC2AF8401A1EDFFF40B7D15F73AE77793FAEB6B622BDB5779E0",
+    "checks": {
+      "readiness": 200,
+      "anonymousClaims": 401,
+      "anonymousMetrics": 401,
+      "allowedPreflight": 200,
+      "deniedPreflight": 403
+    },
+    "flywayVersion": "17",
+    "restoredSyntheticSnapshot": true,
+    "acceptedHistoryPreserved": true,
+    "scope": "Isolated executable JAR/local profile with authentication enabled, no issuer or valid-token flow; not Entra/staging/container acceptance",
+    "providerCalls": false
+  },
+  "databaseMigrationAdded": false,
+  "ciphertextFormatChanged": false,
+  "keyRotated": false,
+  "frontendSourceChanged": false,
+  "cloudResourcesChanged": false,
+  "paidProviderCalls": false,
+  "previewRestarted": false,
+  "remoteCiRun": false,
+  "scope": "Local Java/PostgreSQL/HTTP regression and executable JAR acceptance only; Azure, Entra, private networking, Defender delivery and container acceptance remain open",
+  "testLog": "C:\\Users\\fumeh\\.cache\\mmaug-preview\\pii-hardening-tests-final.log"
+}

@@ -19,6 +19,7 @@ public class EvidenceRefResponse {
 
     private String sourceType;
     private UUID documentId;
+    private UUID extractionId;
     private String documentName;
     private Integer page;
     private String snippet;

@@ -35,7 +35,7 @@ public class FindingController {
     }
 
     @Operation(summary = "List findings for a claim",
-            description = "Lists validation findings filtered by type, severity and resolution status.")
+            description = "Lists current-run findings by default. Use runId for a claim-bound historical run or includeHistory=true for all runs. Filters apply within that selection.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Findings listed"),
             @ApiResponse(responseCode = "403", description = "Not permitted",
@@ -49,8 +49,10 @@ public class FindingController {
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String severity,
             @RequestParam(required = false) Boolean resolved,
+            @RequestParam(required = false) UUID runId,
+            @RequestParam(defaultValue = "false") boolean includeHistory,
             CurrentUser user) {
-        return ResponseEntity.ok(findingService.list(claimId, type, severity, resolved, user));
+        return ResponseEntity.ok(findingService.list(claimId, type, severity, resolved, user, runId, includeHistory));
     }
 
     @Operation(summary = "Resolve finding",

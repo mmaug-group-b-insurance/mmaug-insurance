@@ -67,7 +67,7 @@ public class DashboardService {
 
         long openFindings = 0;
         for (Claim c : all) {
-            openFindings += findingRepository.countByClaimIdAndResolvedFalse(c.getId());
+            openFindings += findingRepository.countByClaimIdAndAgentRunIdAndResolvedFalse(c.getId(), c.getLatestRunId());
         }
 
         List<DashboardResponse.ActivityItem> recent = new ArrayList<>();

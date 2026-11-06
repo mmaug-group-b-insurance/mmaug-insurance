@@ -10,8 +10,9 @@ import java.util.List;
 public class BusinessRulesTool {
 
     public RulesView load(String productCode) {
+        if (!"PRIVATE_MOTOR".equals(productCode)) throw new com.mmaug.claimsagent.common.exception.NotFoundException("No synthetic rules for product");
         return RulesView.builder()
-                .ruleSetVersion("1.0.0")
+                .ruleSetVersion("synthetic-1.0.0")
                 .requiredFields(List.of(
                         "policyNumber", "claimantName", "vehicleRegistration",
                         "incidentDate", "incidentLocation", "incidentDescription"))

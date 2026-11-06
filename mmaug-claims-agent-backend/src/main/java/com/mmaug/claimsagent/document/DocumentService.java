@@ -46,20 +46,23 @@ public class DocumentService {
 
     public DocumentUploadResponse upload(UUID claimId, MultipartFile file,
                                          DocumentType documentType, CurrentUser user) {
-        Claim claim = claimRepository.findById(claimId)
+        Claim claim = claimRepository.findForDocumentUpload(claimId)
                 .orElseThrow(() -> new NotFoundException("Claim not found: " + claimId));
 
         assertCanModify(claim, user);
 
         long count = documentRepository.countByClaimIdAndDeletedAtIsNull(claimId);
-        fileValidator.validate(file, count);
+        String validatedContentType = fileValidator.validate(file, count);
 
         String sha256 = computeSha256(file);
+        if (documentRepository.existsByClaimIdAndSha256AndDeletedAtIsNull(claimId, sha256)) {
+            throw new com.mmaug.claimsagent.common.exception.DuplicateDocumentException();
+        }
         String blobName = UUID.randomUUID() + "-" + sanitize(file.getOriginalFilename());
         String container = "quarantine";
 
         try (InputStream in = file.getInputStream()) {
-            blobStorageService.store(container, blobName, in, file.getSize(), file.getContentType());
+            blobStorageService.store(container, blobName, in, file.getSize(), validatedContentType);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to store uploaded file", e);
         }
@@ -69,9 +72,10 @@ public class DocumentService {
         doc.setOriginalFilename(file.getOriginalFilename());
         doc.setBlobContainer(container);
         doc.setBlobName(blobName);
-        doc.setContentType(file.getContentType() != null ? file.getContentType() : "application/octet-stream");
+        doc.setContentType(validatedContentType);
         doc.setSizeBytes(file.getSize());
         doc.setSha256(sha256);
+        doc.setStorageEtag(blobStorageService.version(container, blobName));
         doc.setDocumentType(documentType != null ? documentType : DocumentType.OTHER);
         doc.setScanStatus(ScanStatus.PENDING);
         doc.setProcessingStatus(ProcessingStatus.QUARANTINED);
@@ -126,7 +130,12 @@ public class DocumentService {
 
     public InputStream download(UUID documentId, CurrentUser user) {
         ClaimDocument doc = getDocument(documentId, user);
-        return blobStorageService.retrieve(doc.getBlobContainer(), doc.getBlobName());
+        if (doc.getScanStatus() != ScanStatus.CLEAN) {
+            throw new com.mmaug.claimsagent.common.exception.UnsafeFileException("Document is quarantined or has not passed malware scanning");
+        }
+        return doc.getStorageEtag() == null
+                ? blobStorageService.retrieve(doc.getBlobContainer(), doc.getBlobName())
+                : blobStorageService.retrieveVersion(doc.getBlobContainer(), doc.getBlobName(), doc.getStorageEtag());
     }
 
     public void softDelete(UUID documentId, CurrentUser user) {
@@ -141,6 +150,8 @@ public class DocumentService {
             throw new ForbiddenException("Not permitted to delete this document");
         }
 
+        // Serialize deletion with snapshot capture/publication, as upload and review already do.
+        claimRepository.findForDocumentUpload(doc.getClaim().getId()).orElseThrow(() -> new NotFoundException("Claim not found"));
         doc.setDeletedAt(Instant.now());
         documentRepository.save(doc);
     }

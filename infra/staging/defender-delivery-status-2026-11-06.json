@@ -1,0 +1,49 @@
+{
+  "inspectedAtUtc": "2026-11-06T11:29:03.1147713Z",
+  "accountPublicNetworkAccess": "Disabled",
+  "anonymousBlobAccessDisabled": true,
+  "sharedKeyAccessDisabled": true,
+  "privateEndpointConnectionCount": 0,
+  "requiredPrivateContainersPresent": true,
+  "eventSubscriptionState": "Succeeded",
+  "deliveryIdentity": "SystemAssigned",
+  "queue": "defender-results",
+  "deadLetterIdentity": "SystemAssigned",
+  "deadLetterContainer": "eventgrid-deadletter",
+  "eventDeliverySchema": "EventGridSchema",
+  "retryPolicy": {
+    "eventTimeToLiveInMinutes": 1440,
+    "maxDeliveryAttempts": 30
+  },
+  "filters": {
+    "advancedFilters": [
+      {
+        "key": "data.blobUri",
+        "operatorType": "StringBeginsWith",
+        "values": [
+          "https://stmmaugclaimsstg01.blob.core.windows.net/quarantine/"
+        ]
+      }
+    ],
+    "enableAdvancedFilteringOnArrays": null,
+    "includedEventTypes": [
+      "Microsoft.Security.MalwareScanningResult"
+    ],
+    "isSubjectCaseSensitive": null,
+    "subjectBeginsWith": "",
+    "subjectEndsWith": ""
+  },
+  "defender": {
+    "enabled": true,
+    "onUpload": {
+      "capGBPerMonth": -1,
+      "isEnabled": false
+    },
+    "operationCode": null,
+    "override": true,
+    "resultTopic": null
+  },
+  "scanConfigurationMatchesIntent": false,
+  "liveDeliveryAccepted": false,
+  "scope": "Configuration inspection only; real Defender scan, Base64 decode, queue consumption, monitoring notifications and private connectivity require live acceptance"
+}

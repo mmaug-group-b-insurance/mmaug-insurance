@@ -1,0 +1,14 @@
+# Local runtime state and credentials; do not remove the underlying files.
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+**/logs/
+**/storage/
+**/*.log
+**/__pycache__/
+**/*.py[cod]
+**/*.pem
+**/*.pfx
+**/*.p12
+**/*.jks

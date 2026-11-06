@@ -1,0 +1,21 @@
+# Claim-bound policy lookup increment — 4 November 2026
+
+The fixed Java orchestrator now invokes the existing read-only PolicyLookupTool against the backend policy/vehicle repositories. This uses the synthetic local policy database; it is not a new external insurer API or the empty InternalToolsClient scaffold.
+
+Arguments are bound to the persisted run's claim.policyNumberStated, with no model-selected policy number or arbitrary URL. Trigger, list-run and run-detail endpoints now invoke existing ClaimService read authorization before analysis/results access. Existing officer-wide access rules remain unchanged; assignment-specific authorization is not established by this increment.
+
+CasePolicyLookup distinguishes OK, NOT_FOUND, DENIED and UNAVAILABLE. Result identity must match the requested policy; failures contain safe messages and no fabricated policy. ToolCallRecorder stores the typed result snapshot, claim-bound arguments, sourceRef, retrieval timestamp, schema version, latency and outcome with the run. httpStatus remains null because this is an in-process database tool. A successful workflow step means the lookup outcome was recorded, not that a policy matched; its output includes the actual outcome. No-match/denial/unavailability adds run warnings.
+
+Coverage/history/rule lookups, policy/fact cross-checks and citation verification remain explicitly pending. Summary remains a deterministic unverified template and does not incorporate policy assertions. No new approval, rejection, payment or policy mutation behavior. Raw JSON audit snapshots are private application data and must follow existing run access controls.
+
+Verification: CasePolicyLookupTest covers six outcome/scope/identity cases; ClaimsAgentOrchestratorTest covers three workflow failure/warning cases. Live pipeline acceptance requires a backend restart and a new synthetic analysis. Database exceptions can mark the encompassing orchestration transaction rollback-only; independent durable failure recording/recovery remains a known follow-up. This increment does not establish external-tool authentication, HTTP timeout/retry behavior or production readiness. No frontend files or cloud resources changed.
+
+## Live verification and response-contract fix
+
+4 November: live analysis on CLM-2026-000001 committed run f0817323-45a3-4b2e-ad0f-8982c3fd41fb with ESCALATED status. Read-only PostgreSQL query verified get_policy tool_call status SUCCESS and envelope outcome OK, with claim/run-bound sourceRef. This proves the lookup and audit persisted in the running application.
+
+The analysis request nevertheless returned HTTP 500 after the committed run. Controller inspection exposed raw JPA entity responses and frontend contract mismatches: analysis expected {runId}, list expected runId/claimId and parsed warning arrays, detail expected flattened run data plus steps/toolCalls. Replaced raw entities with explicit response projections; steps expose type and parsed summaries, tools expose arguments/resultEnvelope. No frontend changes. AgentRunResponsesTest verifies JSON shape and excludes the nested claim entity. Restart required to verify the corrected live HTTP responses. Do not rerun analysis solely to obtain the previous run ID: inspect the existing run after restart to avoid unnecessary OCR work.
+
+The earlier live run may have extracted previously unprocessed synthetic test uploads. One image with application/octet-stream retained from before MIME normalization cannot be processed by Azure adapter and remains a known failed input. This does not invalidate the recorded successful policy lookup. Policy facts are not yet used for coverage decisions or summary assertions.
+
+After confirmed backend restart, GET /api/v1/agent-runs/f0817323-45a3-4b2e-ad0f-8982c3fd41fb and claim agent-run listing both succeeded. Detail response was flat, contained 10 steps and one tool call, with policy envelope OK for POL-MT-100001. Run remains ESCALATED and retains warnings for the earlier unsupported-MIME document, missing coverage/history/rules and missing citation verification. No additional analysis/OCR invoked for this verification. Browser rendering is not independently verified by this API check.

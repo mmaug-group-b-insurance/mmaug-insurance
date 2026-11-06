@@ -1,0 +1,16 @@
+{
+  "properties": {
+    "sensitiveDataDiscovery": {
+      "isEnabled": false
+    },
+    "isEnabled": true,
+    "malwareScanning": {
+      "onUpload": {
+        "capGBPerMonth": 1,
+        "isEnabled": true
+      },
+      "scanResultsEventGridTopicResourceId": "/subscriptions/9a2ab22e-5269-4da3-a16a-eeed2b0c09aa/resourceGroups/rg_mmaug_insurance/providers/Microsoft.EventGrid/topics/evgt-mmaug-malware-results-stg"
+    },
+    "overrideSubscriptionLevelSettings": true
+  }
+}

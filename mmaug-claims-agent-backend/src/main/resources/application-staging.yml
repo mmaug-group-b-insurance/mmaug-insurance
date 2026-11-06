@@ -1,0 +1,47 @@
+# Private synthetic-data staging. No local authentication bypass or sample seed imports.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  flyway:
+    locations: classpath:db/migration
+  jpa:
+    show-sql: false
+app:
+  security:
+    enabled: true
+    audience: ${ENTRA_AUDIENCE}
+    cors:
+      allowed-origins: ${STAGING_CORS_ORIGINS:}
+  docintel:
+    provider: azure
+  ai:
+    summary-provider: azure
+  storage:
+    provider: azure
+    endpoint: ${STORAGE_BLOB_ENDPOINT}
+    managed-identity-client-id: ${STORAGE_MANAGED_IDENTITY_CLIENT_ID:}
+  scanner:
+    provider: defender-queue
+    queue-endpoint: ${DEFENDER_QUEUE_ENDPOINT}
+    expected-topic: ${DEFENDER_EXPECTED_TOPIC}
+    poll-ms: 30000
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+logging:
+  level:
+    root: INFO
+    com.mmaug.claimsagent: INFO
+    org.springframework.security: INFO

@@ -17,6 +17,7 @@ import java.nio.file.StandardCopyOption;
  * Production uses Azure Blob Storage.
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="app.storage.provider",havingValue="local",matchIfMissing=true)
 @Profile({"local", "test", "dev"})
 public class LocalFileStorageService implements BlobStorageService {
 

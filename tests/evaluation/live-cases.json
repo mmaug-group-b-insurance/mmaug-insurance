@@ -1,0 +1,9 @@
+{
+  "scope": "Developer-authored synthetic labelled images; not independent holdout evidence. Labels fixed before live execution.",
+  "cases": [
+    {"id":"matching-policy", "lines":["Policy Number: POL-MT-100001","Vehicle Registration: ABC 123","Incident Date: 2026-09-15","Location: Synthetic evaluation road","Damage Description: Synthetic bumper damage"],"expected":{"policyNumber":"POL-MT-100001","vehicleRegistration":"ABC 123","incidentDate":"2026-09-15","incidentLocation":"Synthetic evaluation road","damageDescription":"Synthetic bumper damage"},"absent":[],"expectedFlags":[]},
+    {"id":"three-discrepancies", "lines":["Policy Number: POL-MT-100002","Vehicle Registration: ZZZ999","Incident Date: 1900-01-01","Location: Synthetic evaluation road","Damage Description: Synthetic door damage"],"expected":{"policyNumber":"POL-MT-100002","vehicleRegistration":"ZZZ999","incidentDate":"1900-01-01","incidentLocation":"Synthetic evaluation road","damageDescription":"Synthetic door damage"},"absent":[],"expectedFlags":["CONTRADICTION","VEHICLE_MISMATCH","POLICY_INACTIVE_ON_DATE"]},
+    {"id":"missing-date-location", "lines":["Policy Number: POL-MT-100001","Vehicle Registration: ABC 123","Damage Description: Synthetic mirror damage"],"expected":{"policyNumber":"POL-MT-100001","vehicleRegistration":"ABC 123","damageDescription":"Synthetic mirror damage"},"absent":["incidentDate","incidentLocation"],"expectedFlags":[]},
+    {"id":"smaller-type-reordered", "fontSize":23,"lines":["Damage Description: Synthetic rear bumper damage","Location: Synthetic evaluation road","Incident Date: 2026-09-15","Vehicle Registration: ABC 123","Policy Number: POL-MT-100001"],"expected":{"policyNumber":"POL-MT-100001","vehicleRegistration":"ABC 123","incidentDate":"2026-09-15","incidentLocation":"Synthetic evaluation road","damageDescription":"Synthetic rear bumper damage"},"absent":[],"expectedFlags":[]}
+  ]
+}

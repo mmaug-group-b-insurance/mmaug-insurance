@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-05",
+  "testsRun": 115,
+  "passed": 113,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 2,
+  "liveProviderCalls": false,
+  "migrationVersion": 16,
+  "fixtureCount": 10,
+  "offlineStructuringFieldChecks": 110,
+  "fixtureScope": "regression; not live OCR/model accuracy or independent holdout",
+  "runtimeAcceptance": "V16 applied; post-restart history preservation verified by read-only API and PostgreSQL; new live provider path pending separate acceptance",
+  "preservedPreview": {
+    "claimNumber": "CLM-2026-000004",
+    "summaryVersion": 4,
+    "reviewCount": 1,
+    "currentFindings": 3,
+    "resolvedFindings": 2
+  },
+  "executableJarBuild": "passed",
+  "jarSha256": "238df2ac4d9d4473a5af6a59d6fb44120b797c481fde0494f96ca0daa1199d2f",
+  "postRestartVerification": {
+    "date": "2026-11-05",
+    "flywayV16Success": true,
+    "newColumnsPresent": 4,
+    "summaryId": "801b1420-83d9-4073-a0c8-1ca83ddbf56b",
+    "reviewReferencesExactSummary": true,
+    "openFindingsCount": 1,
+    "activeRuns": 0,
+    "paidProviderCalls": false
+  }
+}

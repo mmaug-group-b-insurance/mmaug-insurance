@@ -1,0 +1,59 @@
+{
+  "deadLetterDestination": null,
+  "deadLetterWithResourceIdentity": {
+    "deadLetterDestination": {
+      "blobContainerName": "eventgrid-deadletter",
+      "endpointType": "StorageBlob",
+      "resourceId": "/subscriptions/9a2ab22e-5269-4da3-a16a-eeed2b0c09aa/resourceGroups/rg_mmaug_insurance/providers/Microsoft.Storage/storageAccounts/stmmaugclaimsstg01"
+    },
+    "identity": {
+      "type": "SystemAssigned",
+      "userAssignedIdentity": null
+    }
+  },
+  "deliveryWithResourceIdentity": {
+    "destination": {
+      "endpointType": "StorageQueue",
+      "queueMessageTimeToLiveInSeconds": 604800,
+      "queueName": "defender-results",
+      "resourceId": "/subscriptions/9a2ab22e-5269-4da3-a16a-eeed2b0c09aa/resourceGroups/rg_mmaug_insurance/providers/Microsoft.Storage/storageAccounts/stmmaugclaimsstg01"
+    },
+    "identity": {
+      "type": "SystemAssigned",
+      "userAssignedIdentity": null
+    }
+  },
+  "destination": null,
+  "eventDeliverySchema": "EventGridSchema",
+  "expirationTimeUtc": null,
+  "filter": {
+    "advancedFilters": [
+      {
+        "key": "data.blobUri",
+        "operatorType": "StringBeginsWith",
+        "values": [
+          "https://stmmaugclaimsstg01.blob.core.windows.net/quarantine/"
+        ]
+      }
+    ],
+    "enableAdvancedFilteringOnArrays": null,
+    "includedEventTypes": [
+      "Microsoft.Security.MalwareScanningResult"
+    ],
+    "isSubjectCaseSensitive": null,
+    "subjectBeginsWith": "",
+    "subjectEndsWith": ""
+  },
+  "id": "/subscriptions/9a2ab22e-5269-4da3-a16a-eeed2b0c09aa/resourceGroups/rg_mmaug_insurance/providers/Microsoft.EventGrid/topics/evgt-mmaug-malware-results-stg/providers/Microsoft.EventGrid/eventSubscriptions/evgs-mmaug-malware-to-queue-stg",
+  "labels": null,
+  "name": "evgs-mmaug-malware-to-queue-stg",
+  "provisioningState": "Succeeded",
+  "resourceGroup": "rg_mmaug_insurance",
+  "retryPolicy": {
+    "eventTimeToLiveInMinutes": 1440,
+    "maxDeliveryAttempts": 30
+  },
+  "systemData": null,
+  "topic": "/subscriptions/9a2ab22e-5269-4da3-a16a-eeed2b0c09aa/resourceGroups/rg_mmaug_insurance/providers/microsoft.eventgrid/topics/evgt-mmaug-malware-results-stg",
+  "type": "Microsoft.EventGrid/eventSubscriptions"
+}

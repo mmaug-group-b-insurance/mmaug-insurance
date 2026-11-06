@@ -24,6 +24,7 @@ import java.util.UUID;
 @Transactional
 public class FindingService {
 
+    private final FindingEvidenceMapper evidenceMapper;
     private final ValidationFindingRepository findingRepository;
     private final ClaimRepository claimRepository;
     private final ClaimFactRepository claimFactRepository;
@@ -38,7 +39,8 @@ public class FindingService {
                           AgentRunRepository agentRunRepository,
                           CompletenessValidator completenessValidator,
                           ConfidenceChecker confidenceChecker,
-                          ContradictionDetector contradictionDetector) {
+                          ContradictionDetector contradictionDetector, FindingEvidenceMapper evidenceMapper) {
+        this.evidenceMapper = evidenceMapper;
         this.findingRepository = findingRepository;
         this.claimRepository = claimRepository;
         this.claimFactRepository = claimFactRepository;
@@ -72,15 +74,27 @@ public class FindingService {
 
     @Transactional(readOnly = true)
     public List<FindingResponse> list(UUID claimId, String type, String severity, Boolean resolved, CurrentUser user) {
+        return list(claimId, type, severity, resolved, user, null, false);
+    }
+
+    @Transactional(readOnly = true)
+    public List<FindingResponse> list(UUID claimId, String type, String severity, Boolean resolved, CurrentUser user, UUID runId, boolean includeHistory) {
         if (!user.hasRole(Role.CLAIMS_OFFICER) && !user.hasRole(Role.AUDITOR) && !user.hasRole(Role.ADMIN)) {
             throw new ForbiddenException("Only claims officers may view findings");
         }
-        List<ValidationFinding> findings = (resolved != null)
-                ? findingRepository.findAllByClaimIdAndResolvedOrderByCreatedAtDesc(claimId, resolved)
-                : findingRepository.findAllByClaimIdOrderByCreatedAtDesc(claimId);
+        Claim claim = claimRepository.findById(claimId).orElseThrow(() -> new NotFoundException("Claim not found"));
+        if (runId != null && includeHistory) throw new com.mmaug.claimsagent.common.exception.BusinessValidationException("Choose runId or includeHistory, not both");
+        if (runId != null) {
+            AgentRun selected = agentRunRepository.findById(runId).orElseThrow(() -> new NotFoundException("Run not found"));
+            if (!selected.getClaim().getId().equals(claimId)) throw new ForbiddenException("Run does not belong to this claim");
+        }
+        List<ValidationFinding> findings = includeHistory
+                ? findingRepository.findAllByClaimIdOrderByCreatedAtDesc(claimId)
+                : findingRepository.findAllByClaimIdAndAgentRunIdOrderByCreatedAtDesc(claimId, runId != null ? runId : claim.getLatestRunId());
 
         List<FindingResponse> out = new ArrayList<>();
         for (ValidationFinding f : findings) {
+            if (resolved != null && !resolved.equals(f.getResolved())) continue;
             if (type != null && !type.equalsIgnoreCase(f.getFindingType().name())) continue;
             if (severity != null && !severity.equalsIgnoreCase(f.getSeverity().name())) continue;
             out.add(toResponse(f));
@@ -103,16 +117,26 @@ public class FindingService {
         return toResponse(findingRepository.save(finding));
     }
 
+    private List<String> evidence(String json) {
+        if (json == null || json.isBlank()) return List.of();
+        var node = tools.jackson.databind.json.JsonMapper.builder().build().readTree(json);
+        List<String> refs = new ArrayList<>();
+        if (node.isArray()) for (var ref : node) if (ref.isString()) refs.add(ref.asText());
+        return refs;
+    }
+
     private FindingResponse toResponse(ValidationFinding f) {
         return FindingResponse.builder()
                 .id(f.getId())
                 .claimId(f.getClaim().getId())
+                .runId(f.getAgentRun() != null ? f.getAgentRun().getId() : null)
                 .type(f.getFindingType().name())
                 .severity(f.getSeverity().name())
                 .origin(f.getOrigin().name())
                 .fieldName(f.getFieldName())
                 .message(f.getMessage())
-                .evidence(List.of())
+                .evidence(evidenceMapper.map(f, evidence(f.getEvidenceRefs())))
+                .evidenceRefs(evidence(f.getEvidenceRefs()))
                 .resolved(f.getResolved())
                 .resolvedBy(f.getResolvedByUserId())
                 .resolvedAt(f.getResolvedAt())

@@ -1,0 +1,42 @@
+{
+  "observedOn": "2026-10-30",
+  "source": "Signed-in Azure portal; resource-group filters cleared",
+  "subscriptionId": "9a2ab22e-5269-4da3-a16a-eeed2b0c09aa",
+  "resourceGroup": "rg_mmaug_insurance",
+  "resourceGroupLocation": "northeurope",
+  "tenantId": "71beefd7-29f4-4b9e-9cb2-e78b5dc851ad",
+  "visibleResourceCount": 0,
+  "successfulDeploymentHistoryCount": 2,
+  "ownedApplicationCount": 0,
+  "allApplicationsAccess": "Insufficient privileges to view applications",
+  "monthlyBudget": {
+    "amount": 100,
+    "currency": "USD"
+  },
+  "existingPrivateConnection": false,
+  "frontendClientId": null,
+  "apiClientId": null,
+  "changesAppliedToAzure": false,
+  "userReportedUpdate": {
+    "date": "2026-11-02",
+    "vpnGatewayDeployment": "prohibited by user",
+    "applicationName": "mmaug_insurance_app",
+    "applicationClientId": "09ad3a12-27c0-41eb-a6c1-ac8d7bfaa98f",
+    "registrationRole": "API exposure confirmed by supplied configuration; SPA reuse/separate client pending",
+    "scopeName": "mmaug_insurance_app",
+    "fullScopeUri": "api://09ad3a12-27c0-41eb-a6c1-ac8d7bfaa98f/access_as_user/mmaug_insurance_app",
+    "scopeState": "Enabled in supplied screenshot",
+    "scopeConsent": "Admins only",
+    "graphDelegatedPermissionsShownGranted": [
+      "email",
+      "User.Read",
+      "User.Read.All"
+    ],
+    "appRoles": "not evidenced",
+    "customApiClientConsent": "not yet evidenced",
+    "tenantId": "71beefd7-29f4-4b9e-9cb2-e78b5dc851ad",
+    "applicationIdUri": "api://09ad3a12-27c0-41eb-a6c1-ac8d7bfaa98f/access_as_user",
+    "spaRedirectUris": [],
+    "appRoleDefinitions": []
+  }
+}

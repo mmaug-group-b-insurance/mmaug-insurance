@@ -1,0 +1,22 @@
+[
+  {
+    "metric": "PublishSuccessCount",
+    "points": 0,
+    "total": null
+  },
+  {
+    "metric": "DeliverySuccessCount",
+    "points": 0,
+    "total": null
+  },
+  {
+    "metric": "DeliveryAttemptFailCount",
+    "points": 0,
+    "total": null
+  },
+  {
+    "metric": "DeadLetteredCount",
+    "points": 0,
+    "total": null
+  }
+]

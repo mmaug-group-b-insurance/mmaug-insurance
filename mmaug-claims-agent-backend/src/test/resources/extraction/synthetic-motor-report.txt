@@ -1,0 +1,6 @@
+Policy Number: POL-MT-SYN001
+Policyholder Name: Synthetic Officer Demo
+Registration: SYN123
+Incident Date: 2026-10-20
+Location: Valletta
+Damage Description: Front bumper

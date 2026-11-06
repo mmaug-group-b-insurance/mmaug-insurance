@@ -14,4 +14,8 @@ public interface ValidationFindingRepository extends JpaRepository<ValidationFin
     List<ValidationFinding> findAllByClaimIdAndResolvedOrderByCreatedAtDesc(UUID claimId, Boolean resolved);
 
     long countByClaimIdAndResolvedFalse(UUID claimId);
+
+    List<ValidationFinding> findAllByClaimIdAndAgentRunIdOrderByCreatedAtDesc(UUID claimId, UUID runId);
+
+    long countByClaimIdAndAgentRunIdAndResolvedFalse(UUID claimId, UUID runId);
 }

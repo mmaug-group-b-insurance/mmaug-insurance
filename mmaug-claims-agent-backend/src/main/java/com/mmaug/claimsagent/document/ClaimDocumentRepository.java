@@ -8,8 +8,15 @@ import java.util.UUID;
 
 @Repository
 public interface ClaimDocumentRepository extends JpaRepository<ClaimDocument, UUID> {
+    java.util.Optional<ClaimDocument> findByBlobContainerAndBlobNameAndDeletedAtIsNull(String container, String blobName);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select d from ClaimDocument d where d.id = :id")
+    java.util.Optional<ClaimDocument> findForExtraction(@org.springframework.data.repository.query.Param("id") UUID id);
+
 
     List<ClaimDocument> findAllByClaimIdAndDeletedAtIsNull(UUID claimId);
 
     long countByClaimIdAndDeletedAtIsNull(UUID claimId);
+
+    boolean existsByClaimIdAndSha256AndDeletedAtIsNull(UUID claimId, String sha256);
 }

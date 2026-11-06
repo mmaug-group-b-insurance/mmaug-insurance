@@ -15,6 +15,10 @@ public class EscalationEvaluator {
     private static final int LATE_REPORTING_DAYS = 14;
 
     public Evaluation evaluate(Claim claim, boolean injectionSuspected, boolean toolUnavailable) {
+        return evaluate(claim, injectionSuspected, toolUnavailable, com.mmaug.claimsagent.tools.dto.RulesView.Thresholds.builder().highValueAmount(HIGH_VALUE_THRESHOLD).lateReportingDays(LATE_REPORTING_DAYS).build());
+    }
+
+    public Evaluation evaluate(Claim claim, boolean injectionSuspected, boolean toolUnavailable, com.mmaug.claimsagent.tools.dto.RulesView.Thresholds thresholds) {
         List<String> reasons = new ArrayList<>();
         boolean required = false;
 
@@ -22,14 +26,14 @@ public class EscalationEvaluator {
             reasons.add("Injuries reported");
             required = true;
         }
-        if (claim.getEstimatedAmount() != null
-                && claim.getEstimatedAmount().compareTo(HIGH_VALUE_THRESHOLD) > 0) {
+        if (thresholds != null && thresholds.getHighValueAmount() != null && claim.getEstimatedAmount() != null
+                && claim.getEstimatedAmount().compareTo(thresholds.getHighValueAmount()) > 0) {
             reasons.add("Estimated amount exceeds high-value threshold");
             required = true;
         }
-        if (claim.getIncidentDate() != null && claim.getReportedAt() != null) {
+        if (thresholds != null && thresholds.getLateReportingDays() != null && claim.getIncidentDate() != null && claim.getReportedAt() != null) {
             long days = ChronoUnit.DAYS.between(claim.getIncidentDate(), claim.getReportedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate());
-            if (days > LATE_REPORTING_DAYS) {
+            if (days > thresholds.getLateReportingDays()) {
                 reasons.add("Late reporting (" + days + " days)");
                 required = true;
             }

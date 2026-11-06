@@ -1,0 +1,273 @@
+{
+  "startedAt": "2026-11-05T08:21:16.450910+00:00",
+  "manifestSha256": "01b3c1b579a0d0b96851d776ed55dedd725811cf85fe453e157077a4aaa947b5",
+  "scope": "Developer-authored synthetic regression; not an independent holdout, business sign-off or production readiness",
+  "matching": "Exact extracted strings; explicit absent fields; three policy discrepancy types scored as sets per case",
+  "humanReview": "Not submitted; manual assessment remains pending",
+  "results": [
+    {
+      "case": "matching-policy",
+      "pass": true,
+      "fixtureSha256": "86d00e6a8b7711391f0eaaecdcfe30ea704f661f8aabfb355e8d4633eadd9224",
+      "claimId": "96be0dbd-7548-4e99-ad4f-57f8ce5e18e1",
+      "claimNumber": "CLM-2026-000006",
+      "analysisSeconds": 8.565,
+      "runId": "e2183dff-2768-480c-a956-dd453b9b294e",
+      "runStatus": "ESCALATED",
+      "model": "azure-openai/gpt-6.1-sol",
+      "tokensIn": 543,
+      "tokensOut": 128,
+      "summaryId": "fbc952d6-2f18-4cff-8265-7fb166747a3a",
+      "scores": {
+        "presentFieldChecks": [
+          {
+            "field": "policyNumber",
+            "expected": "POL-MT-100001",
+            "actual": "POL-MT-100001",
+            "pass": true
+          },
+          {
+            "field": "vehicleRegistration",
+            "expected": "ABC 123",
+            "actual": "ABC 123",
+            "pass": true
+          },
+          {
+            "field": "incidentDate",
+            "expected": "2026-09-15",
+            "actual": "2026-09-15",
+            "pass": true
+          },
+          {
+            "field": "incidentLocation",
+            "expected": "Synthetic evaluation road",
+            "actual": "Synthetic evaluation road",
+            "pass": true
+          },
+          {
+            "field": "damageDescription",
+            "expected": "Synthetic bumper damage",
+            "actual": "Synthetic bumper damage",
+            "pass": true
+          }
+        ],
+        "absentFieldChecks": [],
+        "truePositiveFlags": 0,
+        "falsePositiveFlags": 0,
+        "falseNegativeFlags": 0,
+        "expectedFlags": [],
+        "actualFlags": [],
+        "flagsExact": true
+      },
+      "citations": {
+        "statementCount": 14,
+        "problems": [],
+        "pass": true
+      }
+    },
+    {
+      "case": "three-discrepancies",
+      "pass": true,
+      "fixtureSha256": "a13a78023006694f77302dbc28061024ad8fbe27bf984e637584c250aba8d4bf",
+      "claimId": "322129a6-a501-429d-9d32-df40c8f818db",
+      "claimNumber": "CLM-2026-000007",
+      "analysisSeconds": 7.87,
+      "runId": "9da17cc5-e8bb-439a-9394-03fa7a85a67f",
+      "runStatus": "ESCALATED",
+      "model": "azure-openai/gpt-6.1-sol",
+      "tokensIn": 543,
+      "tokensOut": 102,
+      "summaryId": "939feca6-7023-415b-9b0f-4ac3c3f2e2b3",
+      "scores": {
+        "presentFieldChecks": [
+          {
+            "field": "policyNumber",
+            "expected": "POL-MT-100002",
+            "actual": "POL-MT-100002",
+            "pass": true
+          },
+          {
+            "field": "vehicleRegistration",
+            "expected": "ZZZ999",
+            "actual": "ZZZ999",
+            "pass": true
+          },
+          {
+            "field": "incidentDate",
+            "expected": "1900-01-01",
+            "actual": "1900-01-01",
+            "pass": true
+          },
+          {
+            "field": "incidentLocation",
+            "expected": "Synthetic evaluation road",
+            "actual": "Synthetic evaluation road",
+            "pass": true
+          },
+          {
+            "field": "damageDescription",
+            "expected": "Synthetic door damage",
+            "actual": "Synthetic door damage",
+            "pass": true
+          }
+        ],
+        "absentFieldChecks": [],
+        "truePositiveFlags": 3,
+        "falsePositiveFlags": 0,
+        "falseNegativeFlags": 0,
+        "expectedFlags": [
+          "CONTRADICTION",
+          "POLICY_INACTIVE_ON_DATE",
+          "VEHICLE_MISMATCH"
+        ],
+        "actualFlags": [
+          "CONTRADICTION",
+          "POLICY_INACTIVE_ON_DATE",
+          "VEHICLE_MISMATCH"
+        ],
+        "flagsExact": true
+      },
+      "citations": {
+        "statementCount": 14,
+        "problems": [],
+        "pass": true
+      }
+    },
+    {
+      "case": "missing-date-location",
+      "pass": true,
+      "fixtureSha256": "8b31336d7e841e92b2c98ecf09a7f69a010a60f33a96e7c56f8e311be9234b31",
+      "claimId": "9cc229f0-28eb-4ca7-bd5e-4ad199260492",
+      "claimNumber": "CLM-2026-000008",
+      "analysisSeconds": 6.763,
+      "runId": "b4839bd3-3681-4f2f-8401-9b9f42afee45",
+      "runStatus": "ESCALATED",
+      "model": "azure-openai/gpt-6.1-sol",
+      "tokensIn": 475,
+      "tokensOut": 99,
+      "summaryId": "ec75e849-8ea8-47a6-aadb-eddffae46a95",
+      "scores": {
+        "presentFieldChecks": [
+          {
+            "field": "policyNumber",
+            "expected": "POL-MT-100001",
+            "actual": "POL-MT-100001",
+            "pass": true
+          },
+          {
+            "field": "vehicleRegistration",
+            "expected": "ABC 123",
+            "actual": "ABC 123",
+            "pass": true
+          },
+          {
+            "field": "damageDescription",
+            "expected": "Synthetic mirror damage",
+            "actual": "Synthetic mirror damage",
+            "pass": true
+          }
+        ],
+        "absentFieldChecks": [
+          {
+            "field": "incidentDate",
+            "actual": null,
+            "pass": true
+          },
+          {
+            "field": "incidentLocation",
+            "actual": null,
+            "pass": true
+          }
+        ],
+        "truePositiveFlags": 0,
+        "falsePositiveFlags": 0,
+        "falseNegativeFlags": 0,
+        "expectedFlags": [],
+        "actualFlags": [],
+        "flagsExact": true
+      },
+      "citations": {
+        "statementCount": 12,
+        "problems": [],
+        "pass": true
+      }
+    },
+    {
+      "case": "smaller-type-reordered",
+      "pass": true,
+      "fixtureSha256": "005747f36fb72f2c475197fa15239fb74cded06582351b140ab10629d239c928",
+      "claimId": "9c6da3ae-4eb8-4a0e-bc5f-5729c49625ea",
+      "claimNumber": "CLM-2026-000009",
+      "analysisSeconds": 6.564,
+      "runId": "d2dd4a06-2820-4247-bae8-4dd9d8371462",
+      "runStatus": "ESCALATED",
+      "model": "azure-openai/gpt-6.1-sol",
+      "tokensIn": 544,
+      "tokensOut": 98,
+      "summaryId": "99f0a65e-11d0-407b-b306-b4d1c23db97b",
+      "scores": {
+        "presentFieldChecks": [
+          {
+            "field": "policyNumber",
+            "expected": "POL-MT-100001",
+            "actual": "POL-MT-100001",
+            "pass": true
+          },
+          {
+            "field": "vehicleRegistration",
+            "expected": "ABC 123",
+            "actual": "ABC 123",
+            "pass": true
+          },
+          {
+            "field": "incidentDate",
+            "expected": "2026-09-15",
+            "actual": "2026-09-15",
+            "pass": true
+          },
+          {
+            "field": "incidentLocation",
+            "expected": "Synthetic evaluation road",
+            "actual": "Synthetic evaluation road",
+            "pass": true
+          },
+          {
+            "field": "damageDescription",
+            "expected": "Synthetic rear bumper damage",
+            "actual": "Synthetic rear bumper damage",
+            "pass": true
+          }
+        ],
+        "absentFieldChecks": [],
+        "truePositiveFlags": 0,
+        "falsePositiveFlags": 0,
+        "falseNegativeFlags": 0,
+        "expectedFlags": [],
+        "actualFlags": [],
+        "flagsExact": true
+      },
+      "citations": {
+        "statementCount": 14,
+        "problems": [],
+        "pass": true
+      }
+    }
+  ],
+  "metrics": {
+    "casesAttempted": 4,
+    "casesScored": 4,
+    "caseFailures": 0,
+    "presentFieldExactMatches": 18,
+    "presentFieldChecks": 18,
+    "presentFieldExactMatchRate": 1.0,
+    "absentFieldsKeptUnknown": 2,
+    "absentFieldChecks": 2,
+    "discrepancyTruePositives": 3,
+    "discrepancyFalsePositives": 0,
+    "discrepancyFalseNegatives": 0,
+    "discrepancyPrecision": 1.0,
+    "discrepancyRecall": 1.0
+  },
+  "completedAllCases": true,
+  "finishedAt": "2026-11-05T08:21:47.551548+00:00"
+}

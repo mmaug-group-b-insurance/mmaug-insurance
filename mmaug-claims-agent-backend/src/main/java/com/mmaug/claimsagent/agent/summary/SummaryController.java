@@ -25,9 +25,11 @@ import java.util.UUID;
 public class SummaryController {
 
     private final SummaryService summaryService;
+    private final com.mmaug.claimsagent.claim.ClaimService claimService;
 
-    public SummaryController(SummaryService summaryService) {
+    public SummaryController(SummaryService summaryService, com.mmaug.claimsagent.claim.ClaimService claimService) {
         this.summaryService = summaryService;
+        this.claimService = claimService;
     }
 
     @Operation(
@@ -46,7 +48,9 @@ public class SummaryController {
     })
     @GetMapping
     public ResponseEntity<SummaryResponse> get(@PathVariable UUID claimId,
-                                               @RequestParam(required = false) Integer version) {
+                                               @RequestParam(required = false) Integer version,
+                                               com.mmaug.claimsagent.security.CurrentUser user) {
+        claimService.get(claimId, user);
         return ResponseEntity.ok(summaryService.getVersion(claimId, version));
     }
 
@@ -60,7 +64,8 @@ public class SummaryController {
                     content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @GetMapping("/versions")
-    public ResponseEntity<List<SummaryVersionItem>> versions(@PathVariable UUID claimId) {
+    public ResponseEntity<List<SummaryVersionItem>> versions(@PathVariable UUID claimId, com.mmaug.claimsagent.security.CurrentUser user) {
+        claimService.get(claimId, user);
         return ResponseEntity.ok(summaryService.listVersions(claimId));
     }
 }

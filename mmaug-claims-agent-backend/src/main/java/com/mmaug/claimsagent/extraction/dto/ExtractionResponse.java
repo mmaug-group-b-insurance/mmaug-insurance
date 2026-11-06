@@ -20,6 +20,7 @@ import java.util.UUID;
 @Schema(description = "Extraction result for a single document")
 public class ExtractionResponse {
 
+    private UUID extractionId;
     private UUID documentId;
     private ExtractionStatus status;
     private String extractorModel;
