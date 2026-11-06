@@ -32,7 +32,7 @@ public class DashboardResponse {
     @Schema(description = "Claims flagged with a risk")
     private Long riskFlaggedCount;
 
-    @Schema(description = "Total open findings across accessible claims")
+    @Schema(description = "Open findings from each accessible claim's current run (unbound findings only before its first successful run)")
     private Long openFindingsCount;
 
     @Schema(description = "Recent activity for the authenticated user's scope")

@@ -3,6 +3,13 @@ package com.mmaug.claimsagent.document;
 import java.io.InputStream;
 
 public interface BlobStorageService {
+    /** Opaque immutable storage version; local storage has no external ETag. */
+    default String version(String container, String blobName) { return null; }
+
+    /** Read an exact external version. Implementations without version support must fail closed. */
+    default InputStream retrieveVersion(String container, String blobName, String etag) {
+        throw new UnsupportedOperationException("Version-pinned storage is unavailable");
+    }
 
     /**
      * Store a file in the specified logical container.

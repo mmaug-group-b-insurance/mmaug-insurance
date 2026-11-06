@@ -24,9 +24,12 @@ import java.util.UUID;
 public class ExtractionController {
 
     private final ExtractionService extractionService;
+    private final com.mmaug.claimsagent.document.DocumentService documentService;
 
-    public ExtractionController(ExtractionService extractionService) {
+    public ExtractionController(ExtractionService extractionService,
+                                com.mmaug.claimsagent.document.DocumentService documentService) {
         this.extractionService = extractionService;
+        this.documentService = documentService;
     }
 
     @Operation(
@@ -41,6 +44,7 @@ public class ExtractionController {
     })
     @GetMapping("/{documentId}/extraction")
     public ResponseEntity<ExtractionResponse> getExtraction(@PathVariable UUID documentId, CurrentUser user) {
+        documentService.getDocument(documentId, user);
         return ResponseEntity.ok(extractionService.getForDocument(documentId));
     }
 
@@ -48,8 +52,8 @@ public class ExtractionController {
             summary = "Trigger extraction for a document",
             description = """
                     Runs OCR and structuring on a document that has passed malware scanning.
-                    The default implementation is deterministic and does not require external AI credentials.
-                    Production deployments replace the OCR client with Azure Document Intelligence.
+                    DOCINTEL_PROVIDER selects the local stub or Azure Document Intelligence.
+                    Processing completes synchronously; inspect the returned extraction status.
                     """)
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "Extraction started"),
@@ -62,6 +66,11 @@ public class ExtractionController {
     })
     @PostMapping("/{documentId}/extraction")
     public ResponseEntity<ExtractionResponse> extract(@PathVariable UUID documentId, CurrentUser user) {
+        if (!user.hasRole(com.mmaug.claimsagent.security.Role.CLAIMS_OFFICER)
+                && !user.hasRole(com.mmaug.claimsagent.security.Role.ADMIN)) {
+            throw new com.mmaug.claimsagent.common.exception.ForbiddenException("Officer access is required to extract evidence");
+        }
+        documentService.getDocument(documentId, user);
         return ResponseEntity.accepted().body(extractionService.extract(documentId));
     }
 }

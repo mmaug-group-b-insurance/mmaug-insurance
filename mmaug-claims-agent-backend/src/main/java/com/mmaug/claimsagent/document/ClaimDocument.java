@@ -63,6 +63,24 @@ public class ClaimDocument extends BaseEntity {
     @Column(name = "processing_status", nullable = false, length = 15)
     private ProcessingStatus processingStatus = ProcessingStatus.UPLOADED;
 
+    @Column(name = "extraction_token")
+    private UUID extractionToken;
+
+    @Column(name = "extraction_expires_at")
+    private Instant extractionExpiresAt;
+
+    @Column(name = "storage_etag", length = 150)
+    private String storageEtag;
+
+    @Column(name = "scan_event_id", length = 150)
+    private String scanEventId;
+
+    @Column(name = "scan_finished_at")
+    private Instant scanFinishedAt;
+
+    @Column(name = "scan_result_code", length = 40)
+    private String scanResultCode;
+
     @Column(name = "page_count")
     private Integer pageCount;
 

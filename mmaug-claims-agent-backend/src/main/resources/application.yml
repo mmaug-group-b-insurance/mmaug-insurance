@@ -10,7 +10,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/mmaug_claims}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:adedeji1127}
+    password: ${DB_PASSWORD:}
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -101,6 +101,8 @@ app:
     max-files-per-claim: 20
     base-path: ${STORAGE_PATH:./storage}
   ai:
+    summary-provider: ${AI_SUMMARY_PROVIDER:deterministic}
+    key: ${AI_KEY:}
     endpoint: ${AI_ENDPOINT:}
     deployment: ${AI_DEPLOYMENT:}
     temperature: 0.0
@@ -110,6 +112,8 @@ app:
     tool-schema-version: v1
     max-tool-iterations: 6
   docintel:
+    provider: ${DOCINTEL_PROVIDER:stub}
+    key: ${DOCINTEL_KEY:}
     endpoint: ${DOCINTEL_ENDPOINT:}
     model: prebuilt-layout
   tools:

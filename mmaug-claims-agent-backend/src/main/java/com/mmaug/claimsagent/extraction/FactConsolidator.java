@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import tools.jackson.databind.json.JsonMapper;
 
 @Service
 @Transactional
@@ -38,6 +39,12 @@ public class FactConsolidator {
         }
 
         for (ExtractedField field : fields) {
+            if (!claim.getId().equals(field.getDocument().getClaim().getId())) {
+                throw new IllegalArgumentException("Extraction belongs to another claim");
+            }
+        }
+        for (ExtractedField field : fields) {
+            if (field.getFieldValue() == null || field.getFieldValue().isBlank()) continue;
             ClaimFact fact = existing.get(field.getFieldName());
             if (fact == null) {
                 fact = new ClaimFact();
@@ -56,6 +63,22 @@ public class FactConsolidator {
                 // Compare with existing
                 String newValue = field.getNormalisedValue() != null ? field.getNormalisedValue() : field.getFieldValue();
                 if (newValue != null && !newValue.equalsIgnoreCase(fact.getValueText())) {
+                    var mapper = JsonMapper.builder().build();
+                    var alternatives = fact.getAlternateValues() == null
+                            ? mapper.createArrayNode()
+                            : (tools.jackson.databind.node.ArrayNode) mapper.readTree(fact.getAlternateValues());
+                    var source = mapper.createObjectNode();
+                    source.put("value", newValue);
+                    source.put("documentId", field.getDocument().getId().toString());
+                    source.put("extractionId", extractionId.toString());
+                    if (field.getPageNumber() != null) source.put("page", field.getPageNumber());
+                    source.put("snippet", field.getSnippet());
+                    boolean recorded = false;
+                    for (var alternative : alternatives) {
+                        if (alternative.equals(source)) recorded = true;
+                    }
+                    if (!recorded) alternatives.add(source);
+                    fact.setAlternateValues(alternatives.toString());
                     fact.setStatus(FactStatus.CONFLICTING);
                     claimFactRepository.save(fact);
                 }

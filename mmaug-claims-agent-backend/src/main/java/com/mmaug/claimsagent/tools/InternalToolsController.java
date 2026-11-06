@@ -32,9 +32,11 @@ import java.util.stream.Collectors;
 
 @Tag(name = "Internal Tools", description = "Internal read-only tool API used by the agent (SERVICE_AGENT only)")
 @RestController
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 @RequestMapping("/internal/tools/v1")
 public class InternalToolsController {
 
+    private final com.mmaug.claimsagent.agent.tools.BusinessRulesTool businessRules;
     private final PolicyService policyService;
     private final VehicleRepository vehicleRepository;
     private final PolicyCoverageRepository coverageRepository;
@@ -43,7 +45,8 @@ public class InternalToolsController {
     public InternalToolsController(PolicyService policyService,
                                    VehicleRepository vehicleRepository,
                                    PolicyCoverageRepository coverageRepository,
-                                   HistoricalClaimRepository historyRepository) {
+                                   HistoricalClaimRepository historyRepository, com.mmaug.claimsagent.agent.tools.BusinessRulesTool businessRules) {
+        this.businessRules = businessRules;
         this.policyService = policyService;
         this.vehicleRepository = vehicleRepository;
         this.coverageRepository = coverageRepository;
@@ -159,26 +162,7 @@ public class InternalToolsController {
     @Operation(summary = "Get business rules")
     @GetMapping("/business-rules")
     public ResponseEntity<ToolEnvelope<RulesView>> getBusinessRules(@RequestParam(required = false) String productCode) {
-        RulesView view = RulesView.builder()
-                .ruleSetVersion("1.0.0")
-                .requiredFields(List.of(
-                        "policyNumber", "claimantName", "vehicleRegistration",
-                        "incidentDate", "incidentLocation", "incidentDescription"))
-                .thresholds(RulesView.Thresholds.builder()
-                        .highValueAmount(BigDecimal.valueOf(10000))
-                        .lateReportingDays(14)
-                        .maxClaimsPerYear(2)
-                        .build())
-                .escalationRules(List.of(
-                        RulesView.EscalationRuleView.builder().id("ESC-001").when("policyNotActiveOnIncidentDate").severity("HIGH").build(),
-                        RulesView.EscalationRuleView.builder().id("ESC-002").when("estimatedAmount > highValueAmount").severity("HIGH").build(),
-                        RulesView.EscalationRuleView.builder().id("ESC-003").when("injuriesReported == true").severity("HIGH").build(),
-                        RulesView.EscalationRuleView.builder().id("ESC-004").when("claimsInLastYear > maxClaimsPerYear").severity("MEDIUM").build(),
-                        RulesView.EscalationRuleView.builder().id("ESC-005").when("reportedAt - incidentDate > lateReportingDays").severity("MEDIUM").build(),
-                        RulesView.EscalationRuleView.builder().id("ESC-006").when("injectionSuspected == true").severity("CRITICAL").build(),
-                        RulesView.EscalationRuleView.builder().id("ESC-007").when("toolUnavailable == true").severity("MEDIUM").build(),
-                        RulesView.EscalationRuleView.builder().id("ESC-008").when("overallConfidence == LOW").severity("MEDIUM").build()))
-                .build();
+        RulesView view = businessRules.load(productCode);
 
         return ResponseEntity.ok(ToolEnvelope.ok(view, "tool:get_business_rules", "v1"));
     }

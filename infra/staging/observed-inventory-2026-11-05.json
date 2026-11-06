@@ -1,0 +1,22 @@
+{
+  "inspectedAtUtc": "2026-11-05T12:21:28.1969007Z",
+  "resourceGroup": {
+    "id": "/subscriptions/9a2ab22e-5269-4da3-a16a-eeed2b0c09aa/resourceGroups/rg_mmaug_insurance",
+    "location": "northeurope",
+    "name": "rg_mmaug_insurance"
+  },
+  "resources": [
+    {
+      "kind": "FormRecognizer",
+      "location": "eastus",
+      "name": "mmaug-claims-docintel-01",
+      "type": "Microsoft.CognitiveServices/accounts"
+    },
+    {
+      "kind": "OpenAI",
+      "location": "eastus",
+      "name": "mmaug-claims-openai-01",
+      "type": "Microsoft.CognitiveServices/accounts"
+    }
+  ]
+}

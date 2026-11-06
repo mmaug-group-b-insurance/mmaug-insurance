@@ -1,0 +1,19 @@
+# Coverage/history and policy evidence checks — 4 November 2026
+
+Adds CaseSupportingLookups to the fixed Java workflow using existing synthetic database tools. Coverage and history requests take only the persisted run's claim policy number; history uses a fixed five-year lookback relative to the existing tool's current date. This is a demonstration default, not an agreed retention or claims-history requirement. No external insurer API or model-controlled URL/argument is introduced.
+
+Each tool records its own typed snapshot, sourceRef, retrieval timestamp, arguments, schema version, latency and outcome. OK with an empty list/zero history remains distinct from NOT_FOUND, DENIED and UNAVAILABLE. Returned policy identity must match the claim-bound request. No retry or fabricated fallback. Database transaction failure recovery remains an outstanding issue as previously documented.
+
+PolicyEvidenceValidator compares the latest successful extraction of each currently clean/extracted document with the policy snapshot. Policy-number differences, registration absent from a known nonempty vehicle list, and incident dates outside an inclusive known policy period produce separate HIGH rule-engine findings linked to the run. Evidence references preserve document ID, extraction ID, page, source value and policy-tool snapshot source. Original extraction facts are untouched. Missing/invalid dates and unknown vehicle lists do not become mismatches; no findings does not imply full verification. Current policy status alone is not treated as historical coverage proof.
+
+Findings now expose stored string evidence references through the existing API. Discrepancies and denied/unavailable tools cause human-review escalation. Policy-not-found remains a distinct warning. Coverage is retrieved but not interpreted; history is retrieved without inferring fraud, liability or an outcome. Summary remains an explicitly unverified deterministic template, with lookup outcomes/limitations in uncertainty notes. Business-rule lookup and summary citation verification are pending.
+
+Tests cover four supporting-lookup cases, four policy-check cases, plus existing policy/workflow/response regressions. No frontend files or cloud resources changed. Backend restart required; new live analysis has not been run for this increment. The existing synthetic test claim contains an old unsupported-MIME document; a new analysis may retry failed/unprocessed files and make paid OCR calls. Use a clean synthetic case or inspect the test inputs before live acceptance.
+
+## Live acceptance after restart
+
+4 November: created synthetic CLM-2026-000004, claim bde72b98-c2e1-4ab3-95da-07048ed07917, with one generated discrepancy-test PNG. Analysis run 9beb85bd-db4d-451c-9097-6fb5b90f59be returned its runId successfully. Subsequent run-detail GET returned three tool envelopes: get_policy OK, get_coverage OK, get_claim_history OK.
+
+Evidence deliberately stated policy POL-MT-100002 while claim policy was POL-MT-100001, registration ZZZ999, and date 1900-01-01. Live findings GET returned exactly the three expected checks: CONTRADICTION(policyNumber), VEHICLE_MISMATCH and POLICY_INACTIVE_ON_DATE. Each retained document 93202283-5e41-46b2-b3c9-660152f321ab, extraction ddb83cdf-d345-4b75-9a03-b6958a4b08fb, page 1, source value and the claim/run-bound policy snapshot reference. Run status ESCALATED, with explicit warnings for three human-review discrepancies and pending coverage interpretation, rule-tool execution and summary citation verification. One synthetic OCR analysis occurred. No consequential claim action or frontend change.
+
+Separate defect observed during preliminary inspection: GET /internal/tools/v1/policies/POL-MT-100001 returned HTTP 500. The in-process claim-bound lookup succeeded, so this external internal-HTTP controller path remains an independent issue to investigate; do not claim it is verified by this test.

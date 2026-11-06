@@ -1,0 +1,3588 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MMAUG Insurance Claims Agent API",
+    "description": "REST API for the MMAUG Insurance Claims Agent (RFP MMAUG-AIDB-RFP-003).\nThe system provides AI-assisted claims processing with human oversight\nand auditable workflows.\n\nResponsible AI: this system is decision-support only. It never\napproves, rejects, determines liability, authorises payment,\nor modifies a policy.\n",
+    "contact": {
+      "name": "MMAUG Insurance Ltd",
+      "url": "https://www.mmaug.example"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://www.mmaug.example/license"
+    },
+    "version": "v1"
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Findings",
+      "description": "Validation findings: missing, contradictory, low-confidence"
+    },
+    {
+      "name": "System",
+      "description": "System information and version metadata"
+    },
+    {
+      "name": "Audit",
+      "description": "Immutable, tamper-evident audit log (AUDITOR and ADMIN only)"
+    },
+    {
+      "name": "AI Summaries",
+      "description": "AI-generated claim summaries with typed statements and evidence references"
+    },
+    {
+      "name": "Authentication",
+      "description": "Authentication is performed by Microsoft Entra ID. The frontend obtains a JWT\nvia MSAL and sends it as `Authorization: Bearer <token>`. This controller exposes\nthe authenticated user's identity and roles to the frontend after login.\n"
+    },
+    {
+      "name": "Claims",
+      "description": "Claim creation, retrieval, update, submission and management APIs"
+    },
+    {
+      "name": "Dashboard",
+      "description": "Role-aware dashboard aggregates for the React frontend"
+    },
+    {
+      "name": "Reviews",
+      "description": "Human review workflow. The AI never approves or rejects a claim.\nOfficers acknowledge, request information, escalate, accept for investigation,\nor reject the summary for regeneration. The final decision is made outside the system.\n"
+    },
+    {
+      "name": "Extraction",
+      "description": "Document extraction and structured field retrieval"
+    },
+    {
+      "name": "Internal Tools",
+      "description": "Internal read-only tool API used by the agent (SERVICE_AGENT only)"
+    },
+    {
+      "name": "Documents",
+      "description": "Upload, list, download and delete claim documents"
+    },
+    {
+      "name": "Agent Runs",
+      "description": "Trigger, list, and inspect agent pipeline runs"
+    }
+  ],
+  "paths": {
+    "/api/v1/documents/{documentId}/extraction": {
+      "get": {
+        "tags": [
+          "Extraction"
+        ],
+        "summary": "Get extraction result for a document",
+        "description": "Returns the latest extraction and structured fields for the given document.",
+        "operationId": "getExtraction",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Extraction retrieved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document or extraction not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Extraction"
+        ],
+        "summary": "Trigger extraction for a document",
+        "description": "Runs OCR and structuring on a document that has passed malware scanning.\nDOCINTEL_PROVIDER selects the local stub or Azure Document Intelligence.\nProcessing completes synchronously; inspect the returned extraction status.\n",
+        "operationId": "extract",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Extraction started",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Document not clean or extraction failed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims": {
+      "get": {
+        "tags": [
+          "Claims"
+        ],
+        "summary": "List claims",
+        "description": "Paginated list of claims filtered by the supplied criteria and the caller's role.",
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "criteria",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ClaimSearchCriteria"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claims retrieved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClaimListItem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClaimListItem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Claims"
+        ],
+        "summary": "Create claim",
+        "description": "Creates a new draft claim for the authenticated user.",
+        "operationId": "create",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClaimRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Claim created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claimId}/submit": {
+      "post": {
+        "tags": [
+          "Claims"
+        ],
+        "summary": "Submit claim",
+        "description": "Transitions a draft claim to SUBMITTED.",
+        "operationId": "submit",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claim submitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Claim not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Claim is not in DRAFT status",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claimId}/reviews": {
+      "get": {
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "List reviews for a claim",
+        "operationId": "list_1",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reviews listed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewResponse"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "Submit officer review",
+        "description": "Submits a human review. Outcomes are ACKNOWLEDGED, INFO_REQUESTED,\nESCALATED_TO_SENIOR, ACCEPTED_FOR_INVESTIGATION, or SUMMARY_REJECTED_REGENERATE.\nThere is no approve or reject outcome.\n",
+        "operationId": "create_1",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Review submitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only claims officers may submit reviews",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Claim or summary not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Missing required field for outcome",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claimId}/documents": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "List claim documents",
+        "description": "Lists all active documents associated with a claim.",
+        "operationId": "list_2",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documents listed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentResponse"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Claim not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Upload claim document",
+        "description": "Uploads a supported document to an existing claim.\nAllowed types: PDF, JPG, JPEG, PNG, TIFF. Maximum 15 MB per file.\nMaximum 20 files per claim. Documents are placed in quarantine first,\nthen scanned before processing.\n",
+        "operationId": "upload",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "documentType",
+            "in": "query",
+            "description": "Declared document type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CLAIM_FORM",
+                "POLICE_REPORT",
+                "REPAIR_ESTIMATE",
+                "PHOTO",
+                "INCIDENT_REPORT",
+                "MEDICAL_REPORT",
+                "WITNESS_STATEMENT",
+                "OTHER"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File to upload"
+                  },
+                  "user": {
+                    "$ref": "#/components/schemas/CurrentUser"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Document uploaded",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Claim not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "File too large",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unsafe file",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claimId}/analyse": {
+      "post": {
+        "tags": [
+          "Agent Runs"
+        ],
+        "summary": "Trigger agent analysis",
+        "description": "Runs the fixed agent pipeline for a claim. The pipeline performs scan check,\nOCR, structuring, guardrails, consolidation, validation, tool invocation,\nsummary generation, evidence verification and escalation check.\nThis operation never approves, rejects, determines liability or authorises payment.\n",
+        "operationId": "analyse",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Run completed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only claims officers may trigger analysis",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Claim not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/findings/{findingId}/resolve": {
+      "patch": {
+        "tags": [
+          "Findings"
+        ],
+        "summary": "Resolve finding",
+        "description": "Marks a finding as resolved with a resolution note. Only claims officers may resolve findings.",
+        "operationId": "resolve",
+        "parameters": [
+          {
+            "name": "findingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveFindingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Finding resolved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Finding not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claimId}": {
+      "get": {
+        "tags": [
+          "Claims"
+        ],
+        "summary": "Get claim by ID",
+        "description": "Retrieves a claim and its accessible claim information for the authenticated user.",
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claim retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User does not have permission to access this claim",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Claim not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Claims"
+        ],
+        "summary": "Update draft claim",
+        "description": "Partially updates a draft claim. Owners can edit their own drafts. Officers can edit any claim.",
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateClaimRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Claim updated",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Claim not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Concurrent modification detected",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/tools/v1/policies/{policyNumber}": {
+      "get": {
+        "tags": [
+          "Internal Tools"
+        ],
+        "summary": "Get policy",
+        "operationId": "getPolicy",
+        "parameters": [
+          {
+            "name": "policyNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolEnvelopePolicyView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/tools/v1/policies/{policyNumber}/coverage": {
+      "get": {
+        "tags": [
+          "Internal Tools"
+        ],
+        "summary": "Get coverage",
+        "operationId": "getCoverage",
+        "parameters": [
+          {
+            "name": "policyNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "coverageType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "THIRD_PARTY",
+                "FIRE_AND_THEFT",
+                "COMPREHENSIVE",
+                "WINDSCREEN",
+                "LEGAL_EXPENSES",
+                "ROADSIDE_ASSISTANCE",
+                "COURTESY_CAR"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolEnvelopeCoverageView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/tools/v1/policies/{policyNumber}/claim-history": {
+      "get": {
+        "tags": [
+          "Internal Tools"
+        ],
+        "summary": "Get claim history",
+        "operationId": "getClaimHistory",
+        "parameters": [
+          {
+            "name": "policyNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "yearsBack",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 5
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolEnvelopeHistoryView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/tools/v1/business-rules": {
+      "get": {
+        "tags": [
+          "Internal Tools"
+        ],
+        "summary": "Get business rules",
+        "operationId": "getBusinessRules",
+        "parameters": [
+          {
+            "name": "productCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolEnvelopeRulesView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get current user profile",
+        "description": "Returns the authenticated user's identity and roles, derived from the JWT.\nThe frontend calls this after sign-in to determine what the user can do.\nThe token itself is issued by Microsoft Entra ID, not by this backend.\n",
+        "operationId": "me",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/{documentId}/download": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Download document",
+        "description": "Streams the original file to the caller. Access is role- and owner-restricted.",
+        "operationId": "download",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File streamed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Get dashboard aggregates",
+        "description": "Returns claim status counts, claims awaiting review, escalated claims,\nrisk-flagged claims, open findings, and recent activity.\nThe scope depends on the authenticated user's role:\nclaimants see only their own claims; officers, auditors and admins see all.\n",
+        "operationId": "get_1",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard data returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claimId}/summary": {
+      "get": {
+        "tags": [
+          "AI Summaries"
+        ],
+        "summary": "Get claim summary",
+        "description": "Returns the latest AI-generated claim summary.\nThe summary is decision-support only. It never approves, rejects,\ndetermines liability, authorises payment, or modifies a policy.\n",
+        "operationId": "get_2",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Summary retrieved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Summary not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claimId}/summary/versions": {
+      "get": {
+        "tags": [
+          "AI Summaries"
+        ],
+        "summary": "List summary versions",
+        "description": "Returns the list of summary versions available for the claim, newest first. Returns an empty list when no summaries exist.",
+        "operationId": "versions",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versions returned (may be empty)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SummaryVersionItem"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claimId}/findings": {
+      "get": {
+        "tags": [
+          "Findings"
+        ],
+        "summary": "List findings for a claim",
+        "description": "Lists current-run findings by default. Use runId for a claim-bound historical run or includeHistory=true for all runs. Filters apply within that selection.",
+        "operationId": "list_3",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resolved",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "runId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "includeHistory",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Findings listed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FindingResponse"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Claim not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claimId}/agent-runs": {
+      "get": {
+        "tags": [
+          "Agent Runs"
+        ],
+        "summary": "List agent runs for a claim",
+        "operationId": "listRuns",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/audit-events": {
+      "get": {
+        "tags": [
+          "Audit"
+        ],
+        "summary": "List audit events",
+        "description": "Paginated audit log filtered by claim. Restricted to AUDITOR and ADMIN roles.",
+        "operationId": "list_4",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit events listed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageAuditEventResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only auditors or admins may view audit events",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent-runs/{runId}": {
+      "get": {
+        "tags": [
+          "Agent Runs"
+        ],
+        "summary": "Get agent run detail",
+        "operationId": "getRun",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/versions": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Get version metadata",
+        "description": "Returns the application version, git commit, prompt version,\ntool schema version, business rules version, and the rules checksum.\nNo secrets are exposed.\n",
+        "operationId": "get_3",
+        "responses": {
+          "200": {
+            "description": "Versions returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only admins or officers may view versions",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{documentId}": {
+      "delete": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Delete document",
+        "description": "Soft-deletes a document. Owners may delete documents on draft claims; admins may delete any.",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CurrentUser"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Document deleted"
+          },
+          "403": {
+            "description": "Not permitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CurrentUser": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "entraOid": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "CLAIMANT",
+                "CLAIMS_OFFICER",
+                "AUDITOR",
+                "ADMIN",
+                "SERVICE_AGENT"
+              ]
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "description": "Standard API error response",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Error timestamp",
+            "example": "2026-01-01T12:00:00Z"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "HTTP status code",
+            "example": 400
+          },
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code",
+            "example": "VALIDATION_FAILED"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message",
+            "example": "Validation failed"
+          },
+          "path": {
+            "type": "string",
+            "description": "Request path",
+            "example": "/api/v1/claims"
+          },
+          "correlationId": {
+            "type": "string",
+            "description": "Correlation ID for tracing",
+            "example": "a1b2c3d4"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "description": "Field-level validation errors",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            }
+          }
+        }
+      },
+      "FieldError": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Field name",
+            "example": "policyNumber"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message",
+            "example": "must match POL-MT-######"
+          }
+        }
+      },
+      "ExtractedFieldDto": {
+        "type": "object",
+        "description": "Single extracted field",
+        "properties": {
+          "fieldName": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "normalisedValue": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "number"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "snippet": {
+            "type": "string"
+          }
+        }
+      },
+      "ExtractionResponse": {
+        "type": "object",
+        "description": "Extraction result for a single document",
+        "properties": {
+          "extractionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SUCCEEDED",
+              "PARTIAL",
+              "FAILED"
+            ]
+          },
+          "extractorModel": {
+            "type": "string"
+          },
+          "llmModel": {
+            "type": "string"
+          },
+          "promptVersion": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "string"
+          },
+          "overallConfidence": {
+            "type": "number"
+          },
+          "injectionSuspected": {
+            "type": "boolean"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExtractedFieldDto"
+            }
+          }
+        }
+      },
+      "CreateClaimRequest": {
+        "type": "object",
+        "description": "Request used to create an insurance claim",
+        "properties": {
+          "policyNumber": {
+            "type": "string",
+            "description": "Insurance policy number",
+            "example": "POL-MT-123456",
+            "minLength": 1,
+            "pattern": "^POL-MT-\\d{6}$"
+          },
+          "claimantName": {
+            "type": "string",
+            "description": "Claimant full name",
+            "example": "Maria Borg",
+            "maxLength": 150,
+            "minLength": 0
+          },
+          "claimantPhone": {
+            "type": "string",
+            "description": "Claimant phone in E.164 format",
+            "example": "+35679123456",
+            "minLength": 1,
+            "pattern": "^\\+[1-9]\\d{1,14}$"
+          },
+          "claimantEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Claimant email address",
+            "example": "claimant@example.com",
+            "minLength": 1
+          },
+          "vehicleRegistration": {
+            "type": "string",
+            "description": "Vehicle registration",
+            "example": "ABC 123",
+            "maxLength": 15,
+            "minLength": 0
+          },
+          "incidentDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Date the incident occurred",
+            "example": "2026-09-15"
+          },
+          "incidentTime": {
+            "type": "string",
+            "description": "Time the incident occurred",
+            "example": "14:30:00"
+          },
+          "incidentLocation": {
+            "type": "string",
+            "description": "Location of the incident",
+            "example": "Triq Manwel Dimech, Sliema",
+            "maxLength": 300,
+            "minLength": 0
+          },
+          "incidentDescription": {
+            "type": "string",
+            "description": "Detailed description of the incident",
+            "example": "Vehicle was involved in a road traffic accident at the junction...",
+            "maxLength": 5000,
+            "minLength": 20
+          },
+          "thirdPartyInvolved": {
+            "type": "boolean",
+            "description": "Whether a third party was involved"
+          },
+          "policeReportNumber": {
+            "type": "string",
+            "description": "Police report reference number (optional)",
+            "maxLength": 40,
+            "minLength": 0
+          },
+          "injuriesReported": {
+            "type": "boolean",
+            "description": "Whether injuries were reported"
+          },
+          "estimatedAmount": {
+            "type": "number",
+            "description": "Estimated claim amount (optional)",
+            "example": 1250000.0,
+            "minimum": 0
+          },
+          "channel": {
+            "type": "string",
+            "description": "Channel through which the claim is submitted",
+            "enum": [
+              "WEB_PORTAL",
+              "EMAIL",
+              "BRANCH",
+              "PHONE",
+              "BROKER"
+            ],
+            "example": "WEB_PORTAL"
+          }
+        },
+        "required": [
+          "claimantEmail",
+          "claimantName",
+          "claimantPhone",
+          "incidentDate",
+          "incidentDescription",
+          "incidentLocation",
+          "injuriesReported",
+          "policyNumber",
+          "thirdPartyInvolved",
+          "vehicleRegistration"
+        ]
+      },
+      "ClaimResponse": {
+        "type": "object",
+        "description": "Claim representation",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "PROCESSING",
+              "AWAITING_INFORMATION",
+              "READY_FOR_REVIEW",
+              "ESCALATED",
+              "UNDER_INVESTIGATION",
+              "CLOSED_BY_OFFICER"
+            ]
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "WEB_PORTAL",
+              "EMAIL",
+              "BRANCH",
+              "PHONE",
+              "BROKER"
+            ]
+          },
+          "policyNumberStated": {
+            "type": "string"
+          },
+          "policyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimantName": {
+            "type": "string"
+          },
+          "claimantPhone": {
+            "type": "string"
+          },
+          "claimantEmail": {
+            "type": "string"
+          },
+          "vehicleRegistration": {
+            "type": "string"
+          },
+          "incidentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "incidentTime": {
+            "type": "string"
+          },
+          "incidentLocation": {
+            "type": "string"
+          },
+          "incidentDescription": {
+            "type": "string"
+          },
+          "thirdPartyInvolved": {
+            "type": "boolean"
+          },
+          "policeReportNumber": {
+            "type": "string"
+          },
+          "injuriesReported": {
+            "type": "boolean"
+          },
+          "estimatedAmount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "riskFlag": {
+            "type": "boolean"
+          },
+          "escalationReason": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "CreateReviewRequest": {
+        "type": "object",
+        "description": "Officer review submission. No APPROVED or REJECTED outcome exists.",
+        "properties": {
+          "summaryId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Summary version reviewed"
+          },
+          "outcome": {
+            "type": "string",
+            "description": "Review outcome",
+            "enum": [
+              "ACKNOWLEDGED",
+              "INFO_REQUESTED",
+              "ESCALATED_TO_SENIOR",
+              "ACCEPTED_FOR_INVESTIGATION",
+              "SUMMARY_REJECTED_REGENERATE"
+            ],
+            "example": "ACCEPTED_FOR_INVESTIGATION"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Reviewer comment",
+            "maxLength": 4000,
+            "minLength": 0
+          },
+          "infoRequested": {
+            "type": "string",
+            "description": "Information requested (required when outcome is INFO_REQUESTED)",
+            "maxLength": 4000,
+            "minLength": 0
+          },
+          "agreedWithEscalation": {
+            "type": "boolean",
+            "description": "Whether the reviewer agrees with the AI escalation recommendation"
+          },
+          "edits": {
+            "type": "array",
+            "description": "Optional statement-level edits with reasons",
+            "items": {
+              "$ref": "#/components/schemas/StatementEdit"
+            }
+          }
+        },
+        "required": [
+          "comment",
+          "outcome",
+          "summaryId"
+        ]
+      },
+      "StatementEdit": {
+        "type": "object",
+        "description": "Statement edit submitted by an officer during review",
+        "properties": {
+          "statementId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "editedText": {
+            "type": "string",
+            "maxLength": 1500,
+            "minLength": 0
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "editedText",
+          "reason",
+          "statementId"
+        ]
+      },
+      "EditItem": {
+        "type": "object",
+        "description": "Recorded statement-level edit",
+        "properties": {
+          "statementId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "originalText": {
+            "type": "string"
+          },
+          "editedText": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "ReviewResponse": {
+        "type": "object",
+        "description": "Officer review record",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "summaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reviewer": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "infoRequested": {
+            "type": "string"
+          },
+          "agreedWithEscalation": {
+            "type": "boolean"
+          },
+          "edits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EditItem"
+            }
+          },
+          "reviewedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DocumentUploadResponse": {
+        "type": "object",
+        "description": "Response after uploading a document",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "originalFilename": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "scanStatus": {
+            "type": "string"
+          },
+          "processingStatus": {
+            "type": "string"
+          }
+        }
+      },
+      "ResolveFindingRequest": {
+        "type": "object",
+        "description": "Request to resolve a validation finding",
+        "properties": {
+          "resolutionNote": {
+            "type": "string",
+            "description": "Reason or note describing the resolution",
+            "example": "Confirmed with claimant by phone",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "resolutionNote"
+        ]
+      },
+      "EvidenceRefResponse": {
+        "type": "object",
+        "description": "Evidence reference backing a summary statement",
+        "properties": {
+          "sourceType": {
+            "type": "string"
+          },
+          "documentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "extractionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentName": {
+            "type": "string"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "snippet": {
+            "type": "string"
+          },
+          "toolCallId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "toolName": {
+            "type": "string"
+          },
+          "ruleId": {
+            "type": "string"
+          },
+          "fieldName": {
+            "type": "string"
+          }
+        }
+      },
+      "FindingResponse": {
+        "type": "object",
+        "description": "Validation finding",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "fieldName": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRefResponse"
+            }
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "resolved": {
+            "type": "boolean"
+          },
+          "resolvedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resolutionNote": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UpdateClaimRequest": {
+        "type": "object",
+        "description": "Partial update for a draft claim",
+        "properties": {
+          "policyNumber": {
+            "type": "string",
+            "pattern": "^POL-MT-\\d{6}$"
+          },
+          "claimantName": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 0
+          },
+          "claimantPhone": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{1,14}$"
+          },
+          "claimantEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "vehicleRegistration": {
+            "type": "string",
+            "maxLength": 15,
+            "minLength": 0
+          },
+          "incidentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "incidentTime": {
+            "type": "string"
+          },
+          "incidentLocation": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 0
+          },
+          "incidentDescription": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 20
+          },
+          "thirdPartyInvolved": {
+            "type": "boolean"
+          },
+          "policeReportNumber": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 0
+          },
+          "injuriesReported": {
+            "type": "boolean"
+          },
+          "estimatedAmount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Optimistic locking version",
+            "example": 0
+          }
+        }
+      },
+      "DriverView": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "licenceNumber": {
+            "type": "string"
+          },
+          "isNamedDriver": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PolicyView": {
+        "type": "object",
+        "description": "Policy view exposed to the internal tools API",
+        "properties": {
+          "policyNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "productCode": {
+            "type": "string"
+          },
+          "standardExcess": {
+            "type": "number"
+          },
+          "paymentStatus": {
+            "type": "string"
+          },
+          "policyholder": {
+            "$ref": "#/components/schemas/PolicyholderView"
+          },
+          "vehicles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VehicleView"
+            }
+          },
+          "drivers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DriverView"
+            }
+          }
+        }
+      },
+      "PolicyholderView": {
+        "type": "object",
+        "properties": {
+          "customerNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ToolEnvelopePolicyView": {
+        "type": "object",
+        "description": "Uniform tool response envelope",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Result status",
+            "example": "OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PolicyView"
+          },
+          "errorCode": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "sourceRef": {
+            "type": "string"
+          },
+          "retrievedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "toolSchemaVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "VehicleView": {
+        "type": "object",
+        "properties": {
+          "registration": {
+            "type": "string"
+          },
+          "make": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CoverageItem": {
+        "type": "object",
+        "properties": {
+          "coverageType": {
+            "type": "string"
+          },
+          "included": {
+            "type": "boolean"
+          },
+          "limitAmount": {
+            "type": "number"
+          },
+          "excessAmount": {
+            "type": "number"
+          },
+          "exclusionsText": {
+            "type": "string"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "CoverageView": {
+        "type": "object",
+        "description": "Coverage view exposed to the internal tools API",
+        "properties": {
+          "policyNumber": {
+            "type": "string"
+          },
+          "coverages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoverageItem"
+            }
+          }
+        }
+      },
+      "ToolEnvelopeCoverageView": {
+        "type": "object",
+        "description": "Uniform tool response envelope",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Result status",
+            "example": "OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CoverageView"
+          },
+          "errorCode": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "sourceRef": {
+            "type": "string"
+          },
+          "retrievedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "toolSchemaVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "HistoryItem": {
+        "type": "object",
+        "properties": {
+          "claimReference": {
+            "type": "string"
+          },
+          "lossDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "lossType": {
+            "type": "string"
+          },
+          "amountPaid": {
+            "type": "number"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "atFault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HistoryView": {
+        "type": "object",
+        "description": "Claim history view exposed to the internal tools API",
+        "properties": {
+          "policyNumber": {
+            "type": "string"
+          },
+          "totalClaims": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPaid": {
+            "type": "number"
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryItem"
+            }
+          }
+        }
+      },
+      "ToolEnvelopeHistoryView": {
+        "type": "object",
+        "description": "Uniform tool response envelope",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Result status",
+            "example": "OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HistoryView"
+          },
+          "errorCode": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "sourceRef": {
+            "type": "string"
+          },
+          "retrievedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "toolSchemaVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "EscalationRuleView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "when": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          }
+        }
+      },
+      "RulesView": {
+        "type": "object",
+        "description": "Business rules view exposed to the internal tools API",
+        "properties": {
+          "ruleSetVersion": {
+            "type": "string"
+          },
+          "requiredFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "thresholds": {
+            "$ref": "#/components/schemas/Thresholds"
+          },
+          "escalationRules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EscalationRuleView"
+            }
+          }
+        }
+      },
+      "Thresholds": {
+        "type": "object",
+        "properties": {
+          "highValueAmount": {
+            "type": "number"
+          },
+          "lateReportingDays": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxClaimsPerYear": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ToolEnvelopeRulesView": {
+        "type": "object",
+        "description": "Uniform tool response envelope",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Result status",
+            "example": "OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RulesView"
+          },
+          "errorCode": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "sourceRef": {
+            "type": "string"
+          },
+          "retrievedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "toolSchemaVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "description": "Authenticated user profile",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Local user ID"
+          },
+          "entraObjectId": {
+            "type": "string",
+            "description": "Entra Object ID (oid claim)"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          },
+          "roles": {
+            "type": "array",
+            "description": "Application roles",
+            "items": {
+              "type": "string"
+            }
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Linked customer ID (claimants only)"
+          }
+        }
+      },
+      "ActivityItem": {
+        "type": "object",
+        "description": "Recent activity item",
+        "properties": {
+          "claimId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimNumber": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DashboardResponse": {
+        "type": "object",
+        "description": "Dashboard aggregate data, tailored to the authenticated user's role",
+        "properties": {
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Claim counts by status"
+          },
+          "awaitingReviewCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Claims awaiting human review"
+          },
+          "escalatedCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Claims currently escalated"
+          },
+          "riskFlaggedCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Claims flagged with a risk"
+          },
+          "openFindingsCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Open findings from each accessible claim's current run (unbound findings only before its first successful run)"
+          },
+          "recentActivity": {
+            "type": "array",
+            "description": "Recent activity for the authenticated user's scope",
+            "items": {
+              "$ref": "#/components/schemas/ActivityItem"
+            }
+          }
+        }
+      },
+      "ClaimSearchCriteria": {
+        "type": "object",
+        "description": "Search filters for claims",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "PROCESSING",
+              "AWAITING_INFORMATION",
+              "READY_FOR_REVIEW",
+              "ESCALATED",
+              "UNDER_INVESTIGATION",
+              "CLOSED_BY_OFFICER"
+            ]
+          },
+          "claimNumber": {
+            "type": "string"
+          },
+          "policyNumber": {
+            "type": "string"
+          },
+          "claimantName": {
+            "type": "string"
+          },
+          "riskFlag": {
+            "type": "boolean"
+          },
+          "dateFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "dateTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "assignedToMe": {
+            "type": "boolean"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Zero-based page index",
+            "example": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Page size (max 50)",
+            "example": 20
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort field and direction, e.g. createdAt,desc",
+            "example": "createdAt,desc"
+          }
+        }
+      },
+      "ClaimListItem": {
+        "type": "object",
+        "description": "Claim list item",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "PROCESSING",
+              "AWAITING_INFORMATION",
+              "READY_FOR_REVIEW",
+              "ESCALATED",
+              "UNDER_INVESTIGATION",
+              "CLOSED_BY_OFFICER"
+            ]
+          },
+          "claimantName": {
+            "type": "string"
+          },
+          "policyNumberStated": {
+            "type": "string"
+          },
+          "incidentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "riskFlag": {
+            "type": "boolean"
+          },
+          "documentCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "openFindingCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PageClaimListItem": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClaimListItem"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageableObject": {
+        "type": "object",
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unpaged": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SortObject": {
+        "type": "object",
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          },
+          "sorted": {
+            "type": "boolean"
+          },
+          "unsorted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ClaimDetailResponse": {
+        "type": "object",
+        "description": "Detailed claim representation",
+        "properties": {
+          "claim": {
+            "$ref": "#/components/schemas/ClaimResponse"
+          },
+          "openFindingCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "Open finding counts by severity"
+          },
+          "latestRunId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "latestSummaryId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "StatementResponse": {
+        "type": "object",
+        "description": "A single typed statement within a summary",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "section": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "number"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRefResponse"
+            }
+          }
+        }
+      },
+      "SummaryResponse": {
+        "type": "object",
+        "description": "AI-generated claim summary with typed statements and evidence",
+        "properties": {
+          "summaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "headline": {
+            "type": "string"
+          },
+          "overallConfidence": {
+            "type": "string"
+          },
+          "escalationRecommended": {
+            "type": "boolean"
+          },
+          "escalationReasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "uncertaintyNotes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "disclaimer": {
+            "type": "string"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "promptVersion": {
+            "type": "string"
+          },
+          "llmModel": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/StatementResponse"
+              }
+            },
+            "description": "Statements grouped by section"
+          }
+        }
+      },
+      "SummaryVersionItem": {
+        "type": "object",
+        "description": "One entry in the summary version history",
+        "properties": {
+          "summaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "headline": {
+            "type": "string"
+          },
+          "overallConfidence": {
+            "type": "string"
+          }
+        }
+      },
+      "DocumentResponse": {
+        "type": "object",
+        "description": "Claim document metadata",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "originalFilename": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "documentType": {
+            "type": "string",
+            "enum": [
+              "CLAIM_FORM",
+              "POLICE_REPORT",
+              "REPAIR_ESTIMATE",
+              "PHOTO",
+              "INCIDENT_REPORT",
+              "MEDICAL_REPORT",
+              "WITNESS_STATEMENT",
+              "OTHER"
+            ]
+          },
+          "detectedType": {
+            "type": "string",
+            "enum": [
+              "CLAIM_FORM",
+              "POLICE_REPORT",
+              "REPAIR_ESTIMATE",
+              "PHOTO",
+              "INCIDENT_REPORT",
+              "MEDICAL_REPORT",
+              "WITNESS_STATEMENT",
+              "OTHER"
+            ]
+          },
+          "scanStatus": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CLEAN",
+              "INFECTED",
+              "REJECTED"
+            ]
+          },
+          "processingStatus": {
+            "type": "string",
+            "enum": [
+              "UPLOADED",
+              "QUARANTINED",
+              "EXTRACTING",
+              "EXTRACTED",
+              "FAILED"
+            ]
+          },
+          "pageCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "uploadedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uploadedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AuditEventResponse": {
+        "type": "object",
+        "description": "Immutable audit event",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actor": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actorRole": {
+            "type": "string"
+          },
+          "actorType": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "entityType": {
+            "type": "string"
+          },
+          "entityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ipAddress": {
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string"
+          },
+          "details": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "prevHash": {
+            "type": "string"
+          }
+        }
+      },
+      "PageAuditEventResponse": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditEventResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "VersionsResponse": {
+        "type": "object",
+        "description": "Application and configuration version metadata",
+        "properties": {
+          "appVersion": {
+            "type": "string",
+            "description": "Application version",
+            "example": "1.0.0-SNAPSHOT"
+          },
+          "gitCommit": {
+            "type": "string",
+            "description": "Git commit SHA"
+          },
+          "promptVersion": {
+            "type": "string",
+            "description": "Prompt version",
+            "example": "v1"
+          },
+          "toolSchemaVersion": {
+            "type": "string",
+            "description": "Tool schema version",
+            "example": "v1"
+          },
+          "ruleSetVersion": {
+            "type": "string",
+            "description": "Business rules version",
+            "example": "1.0.0"
+          },
+          "ruleSetSha256": {
+            "type": "string",
+            "description": "Business rules SHA-256 checksum"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "description": "Enter a valid Microsoft Entra ID JWT token",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

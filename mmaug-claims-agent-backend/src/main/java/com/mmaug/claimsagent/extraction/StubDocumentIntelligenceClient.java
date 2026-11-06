@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @Profile({"local", "test", "dev"})
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.docintel.provider", havingValue = "stub", matchIfMissing = true)
 public class StubDocumentIntelligenceClient implements DocumentIntelligenceClientWrapper {
 
     @Override
@@ -23,7 +24,7 @@ public class StubDocumentIntelligenceClient implements DocumentIntelligenceClien
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(document, StandardCharsets.UTF_8))) {
             String text = reader.lines().collect(Collectors.joining("\n"));
-            int pages = Math.max(1, text.length() / 3000 + 1);
+            int pages = 1 + (int) text.chars().filter(c -> c == '\f').count();
             return OcrResult.ok(text, pages);
         } catch (Exception e) {
             return OcrResult.failed("STUB_OCR_FAILED", e.getMessage());

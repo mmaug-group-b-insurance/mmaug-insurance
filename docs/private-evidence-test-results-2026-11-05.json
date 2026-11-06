@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-05",
+  "backendTests": {
+    "run": 145,
+    "failures": 0,
+    "passed": 143,
+    "skippedLive": 2,
+    "errors": 0
+  },
+  "migrationVersion": 17,
+  "jarSha256": "CD6F602C99B10111D4086C6128E9E9EB19507A04D98D499D526745A37F5DBFD5",
+  "executableJarBuild": "passed",
+  "isolatedJarSmoke": {
+    "testedAtUtc": "2026-11-05T12:40:13.6343096Z",
+    "jarSha256": "CD6F602C99B10111D4086C6128E9E9EB19507A04D98D499D526745A37F5DBFD5",
+    "checks": {
+      "readiness": 200,
+      "anonymousClaims": 401,
+      "anonymousMetrics": 401,
+      "allowedPreflight": 200,
+      "deniedPreflight": 403
+    },
+    "flywayVersion": "17",
+    "restoredSyntheticSnapshot": true,
+    "acceptedHistoryPreserved": true,
+    "scope": "Isolated executable JAR/local profile with authentication enabled, no issuer or valid-token flow; not Entra/staging/container acceptance",
+    "providerCalls": false
+  },
+  "azureSdkVersions": {
+    "identity": "1.19.0",
+    "commonCore": "1.61.0",
+    "blob": "12.37.2",
+    "queue": "12.32.2"
+  },
+  "realAzureBlobTested": false,
+  "realDefenderScanTested": false,
+  "managedIdentityFlowTested": false,
+  "cloudResourcesChanged": false,
+  "paidProviderCalls": false,
+  "frontendSourceChanged": false,
+  "previewRestarted": false,
+  "previewMigrationAcceptance": "pending restart; isolated V16-to-V17 history preservation passed",
+  "testLog": "C:\\Users\\fumeh\\.cache\\mmaug-preview\\private-evidence-acceptance-tests.log",
+  "scope": "Mocked SDK/events plus real isolated PostgreSQL/Flyway/HTTP; cloud security and cost acceptance remain open"
+}

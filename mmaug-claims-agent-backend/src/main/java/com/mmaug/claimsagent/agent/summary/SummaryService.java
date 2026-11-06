@@ -25,13 +25,19 @@ public class SummaryService {
     private final ClaimSummaryRepository summaryRepository;
     private final SummaryStatementRepository statementRepository;
     private final EvidenceRefRepository evidenceRefRepository;
+    private final com.mmaug.claimsagent.document.ClaimDocumentRepository documents;
+    private final com.mmaug.claimsagent.agent.tools.ToolCallRepository toolCalls;
 
     public SummaryService(ClaimSummaryRepository summaryRepository,
                           SummaryStatementRepository statementRepository,
-                          EvidenceRefRepository evidenceRefRepository) {
+                          EvidenceRefRepository evidenceRefRepository,
+                          com.mmaug.claimsagent.document.ClaimDocumentRepository documents,
+                          com.mmaug.claimsagent.agent.tools.ToolCallRepository tools) {
         this.summaryRepository = summaryRepository;
         this.statementRepository = statementRepository;
         this.evidenceRefRepository = evidenceRefRepository;
+        this.documents = documents;
+        this.toolCalls = tools;
     }
 
     public SummaryResponse getLatest(UUID claimId) {
@@ -74,7 +80,7 @@ public class SummaryService {
                     .type(st.getStatementType().name())
                     .text(st.getText())
                     .confidence(st.getConfidence())
-                    .evidence(toEvidenceDtos(st.getId()))
+                    .evidence(toEvidenceDtos(st.getId(), summary))
                     .build();
             sections.computeIfAbsent(st.getSection(), k -> new ArrayList<>()).add(dto);
         }
@@ -96,14 +102,21 @@ public class SummaryService {
                 .build();
     }
 
-    private List<EvidenceRefResponse> toEvidenceDtos(UUID statementId) {
+    private List<EvidenceRefResponse> toEvidenceDtos(UUID statementId, ClaimSummary summary) {
         return evidenceRefRepository.findAllByStatementId(statementId).stream()
                 .map(e -> EvidenceRefResponse.builder()
                         .sourceType(e.getSourceType().name())
                         .documentId(e.getDocumentId())
+                        .extractionId(e.getExtractionId())
+                        .documentName(e.getDocumentId() == null ? null : documents.findById(e.getDocumentId())
+                                .filter(doc -> doc.getClaim().getId().equals(summary.getClaim().getId()))
+                                .map(com.mmaug.claimsagent.document.ClaimDocument::getOriginalFilename).orElse(null))
                         .page(e.getPageNumber())
                         .snippet(e.getSnippet())
                         .toolCallId(e.getToolCallId())
+                        .toolName(e.getToolCallId() == null ? null : toolCalls.findById(e.getToolCallId())
+                                .filter(call -> call.getRun().getId().equals(summary.getRun().getId()))
+                                .map(com.mmaug.claimsagent.agent.tools.ToolCall::getToolName).orElse(null))
                         .ruleId(e.getRuleId())
                         .fieldName(e.getFieldName())
                         .build())
@@ -112,20 +125,15 @@ public class SummaryService {
 
     private List<String> parseJsonList(String json) {
         if (json == null || json.isBlank()) return List.of();
-        String stripped = json.trim();
-        if (stripped.startsWith("[") && stripped.endsWith("]")) {
-            stripped = stripped.substring(1, stripped.length() - 1);
-            if (stripped.isBlank()) return List.of();
-            List<String> out = new ArrayList<>();
-            for (String part : stripped.split(",")) {
-                String clean = part.trim().replaceAll("^\"|\"$", "");
-                if (!clean.isBlank()) out.add(clean);
-            }
-            return out;
+        var node = tools.jackson.databind.json.JsonMapper.builder().build().readTree(json);
+        if (!node.isArray()) throw new IllegalStateException("Summary uncertainty metadata must be a JSON array");
+        List<String> out = new ArrayList<>();
+        for (var item : node) {
+            if (!item.isString()) throw new IllegalStateException("Summary uncertainty metadata must contain strings");
+            out.add(item.asText());
         }
-        return List.of(json);
+        return out;
     }
-
     public String disclaimer() {
         return DISCLAIMER;
     }

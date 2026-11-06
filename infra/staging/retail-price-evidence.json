@@ -1,0 +1,51 @@
+{
+  "retrievedOn": "2026-10-30",
+  "source": "https://prices.azure.com/api/retail/prices?%24filter=armRegionName+eq+%27northeurope%27+and+priceType+eq+%27Consumption%27+and+%28serviceName+eq+%27Azure+Container+Apps%27+or+serviceName+eq+%27VPN+Gateway%27+or+serviceName+eq+%27Azure+Database+for+PostgreSQL%27%29&currencyCode=USD",
+  "notes": "Public retail list prices, not a subscription quote or complete estimate; applicability and current SKU eligibility require verification.",
+  "meters": [
+    {
+      "serviceName": "VPN Gateway",
+      "productName": "VPN Gateway",
+      "skuName": "Basic",
+      "meterName": "Basic Gateway",
+      "retailPrice": 0.036,
+      "unitOfMeasure": "1 Hour",
+      "effectiveStartDate": "2014-08-01T00:00:00Z",
+      "currencyCode": "USD",
+      "armRegionName": "northeurope"
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "productName": "Azure Container Apps",
+      "skuName": "Environment",
+      "meterName": "Environment Private Endpoint",
+      "retailPrice": 0.143,
+      "unitOfMeasure": "1 Hour",
+      "effectiveStartDate": "2026-09-01T00:00:00Z",
+      "currencyCode": "USD",
+      "armRegionName": "northeurope"
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "productName": "Azure Container Apps",
+      "skuName": "Environment",
+      "meterName": "Environment Management Hour",
+      "retailPrice": 0.143,
+      "unitOfMeasure": "1 Hour",
+      "effectiveStartDate": "2026-09-01T00:00:00Z",
+      "currencyCode": "USD",
+      "armRegionName": "northeurope"
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "productName": "Azure Container Apps",
+      "skuName": "Dedicated",
+      "meterName": "Dedicated Plan Management",
+      "retailPrice": 0.1,
+      "unitOfMeasure": "1 Hour",
+      "effectiveStartDate": "2023-08-01T00:00:00Z",
+      "currencyCode": "USD",
+      "armRegionName": "northeurope"
+    }
+  ]
+}

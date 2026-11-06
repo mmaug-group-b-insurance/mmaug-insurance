@@ -21,12 +21,14 @@ public class FindingResponse {
 
     private UUID id;
     private UUID claimId;
+    private UUID runId;
     private String type;
     private String severity;
     private String origin;
     private String fieldName;
     private String message;
-    private List<String> evidence;
+    private List<com.mmaug.claimsagent.agent.summary.dto.EvidenceRefResponse> evidence;
+    private List<String> evidenceRefs;
     private Boolean resolved;
     private UUID resolvedBy;
     private Instant resolvedAt;

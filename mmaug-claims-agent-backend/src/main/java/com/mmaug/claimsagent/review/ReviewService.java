@@ -54,11 +54,34 @@ public class ReviewService {
             throw new BusinessValidationException("infoRequested is required when outcome is INFO_REQUESTED");
         }
 
-        Claim claim = claimRepository.findById(claimId)
+        Claim claim = claimRepository.findForDocumentUpload(claimId)
                 .orElseThrow(() -> new NotFoundException("Claim not found: " + claimId));
 
         ClaimSummary summary = summaryRepository.findById(request.getSummaryId())
                 .orElseThrow(() -> new NotFoundException("Summary not found"));
+
+        if (!summary.getClaim().getId().equals(claimId)) {
+            throw new ForbiddenException("Summary does not belong to this claim");
+        }
+        ClaimSummary latest = summaryRepository.findFirstByClaimIdOrderByVersionNoDesc(claimId)
+                .orElseThrow(() -> new NotFoundException("No current summary"));
+        if (!latest.getId().equals(summary.getId())) {
+            throw new BusinessValidationException("A newer summary exists. Open and review the latest version.");
+        }
+        if (request.getOutcome() == null) throw new BusinessValidationException("Review outcome is required");
+        java.util.Map<UUID, SummaryStatement> editedStatements = new java.util.LinkedHashMap<>();
+        if (request.getEdits() != null) for (StatementEdit edit : request.getEdits()) {
+            SummaryStatement statement = statementRepository.findById(edit.getStatementId())
+                    .orElseThrow(() -> new NotFoundException("Statement not found"));
+            if (!statement.getSummary().getId().equals(summary.getId())) {
+                throw new ForbiddenException("Statement does not belong to the reviewed summary");
+            }
+            if (edit.getEditedText() == null || edit.getEditedText().isBlank() || edit.getEditedText().length() > 1500
+                    || edit.getReason() == null || edit.getReason().isBlank() || edit.getReason().length() > 500) {
+                throw new BusinessValidationException("Statement correction requires text (up to 1500 characters) and a reason (up to 500 characters)");
+            }
+            if (editedStatements.put(statement.getId(), statement) != null) throw new BusinessValidationException("Duplicate statement correction");
+        }
 
         OfficerReview review = new OfficerReview();
         review.setClaim(claim);
@@ -73,9 +96,7 @@ public class ReviewService {
 
         if (request.getEdits() != null) {
             for (StatementEdit edit : request.getEdits()) {
-                SummaryStatement statement = statementRepository.findById(edit.getStatementId())
-                        .orElseThrow(() -> new NotFoundException(
-                                "Statement not found: " + edit.getStatementId()));
+                SummaryStatement statement = editedStatements.get(edit.getStatementId());
                 OfficerEdit oe = new OfficerEdit();
                 oe.setReview(review);
                 oe.setStatement(statement);
@@ -84,8 +105,7 @@ public class ReviewService {
                 oe.setReason(edit.getReason());
                 officerEditRepository.save(oe);
 
-                statement.setText(edit.getEditedText());
-                statementRepository.save(statement);
+                // Preserve immutable machine output; officer corrections remain separate annotations.
             }
         }
 

@@ -33,6 +33,9 @@ public class EvidenceRef extends BaseEntity {
     @Column(name = "document_id")
     private UUID documentId;
 
+    @Column(name = "extraction_id")
+    private UUID extractionId;
+
     @Column(name = "page_number")
     private Integer pageNumber;
 

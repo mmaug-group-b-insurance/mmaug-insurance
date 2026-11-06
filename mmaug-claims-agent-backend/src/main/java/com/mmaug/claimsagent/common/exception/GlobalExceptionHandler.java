@@ -21,6 +21,11 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(DuplicateDocumentException.class)
+    public ResponseEntity<ApiError> handleDuplicateDocument(DuplicateDocumentException ex, HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, "DUPLICATE_DOCUMENT", ex.getMessage(), request, List.of());
+    }
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(NotFoundException ex, HttpServletRequest request) {
         return build(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.getMessage(), request, List.of());

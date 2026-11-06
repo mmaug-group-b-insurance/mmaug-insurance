@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-05",
+  "backendTests": {
+    "errors": 0,
+    "failures": 0,
+    "run": 122,
+    "skippedLive": 2,
+    "passed": 120
+  },
+  "evaluationScoringTestsPassed": 5,
+  "executableJarBuild": "passed",
+  "jarSha256": "F96B3411F3AE1E270DCAF6AE2E20C19456E99098F432D7D55338766DC9485F43",
+  "jarSmoke": {
+    "testedAtUtc": "2026-11-05T12:21:02.2736053Z",
+    "jarSha256": "F96B3411F3AE1E270DCAF6AE2E20C19456E99098F432D7D55338766DC9485F43",
+    "checks": {
+      "readiness": 200,
+      "anonymousClaims": 401,
+      "anonymousMetrics": 401,
+      "allowedPreflight": 200,
+      "deniedPreflight": 403
+    },
+    "scope": "Isolated executable JAR/local profile with authentication enabled, no issuer or valid-token flow; not Entra/staging/container acceptance",
+    "providerCalls": false
+  },
+  "databaseRestore": {
+    "testedAtUtc": "2026-11-05T12:18:08.7815737Z",
+    "source": "local synthetic preview",
+    "isolatedRestore": true,
+    "sourceUnchanged": true,
+    "allComparedRowsMatched": true,
+    "tableFingerprints": {
+      "claim": "9:5648ee7f89c5f983d78f542461d51495",
+      "claim_document": "10:424cb3f9147afc32f2ae760f5b7b587f",
+      "extraction_result": "10:18e765a585ecb86c1fbd8cec574c16a3",
+      "agent_run": "10:442f55bf94706f752ec2c028e9f413fe",
+      "claim_summary": "10:33e1bee01fcdd8aadea4e13a72de3d10",
+      "officer_review": "3:4b73ba17cd9da3a6bf334e6d8af779c2",
+      "validation_finding": "18:043fd56b171384e3e001718ecfee81fd"
+    },
+    "flywayVersion": "16",
+    "dumpSha256": "CD692E7410A8C14F81DB0547CAA626E2C679BAF674E8A71D310EF8FD5D2CC96A",
+    "scope": "PostgreSQL only; evidence files and Azure disaster recovery not exercised"
+  },
+  "azureInventory": "infra/staging/observed-inventory-2026-11-05.json",
+  "entraRead": "denied: insufficient privileges",
+  "docker": "engine unavailable; not tested",
+  "githubCI": "prepared locally; not run remotely",
+  "frontendSourceChanged": false,
+  "deployed": false,
+  "stagingAccepted": false,
+  "budgetUSD": 100,
+  "vpnGatewayDeployed": false
+}

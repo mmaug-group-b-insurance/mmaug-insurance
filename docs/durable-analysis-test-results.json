@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-04",
+  "suite": "Invoke-GroundedSprintChecks.ps1",
+  "testsRun": 107,
+  "passed": 105,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 2,
+  "liveProviderCallsInSuite": false,
+  "database": "uniquely named isolated PostgreSQL databases",
+  "migrationVersion": 15,
+  "livePreviewMigrationAcceptance": "V15 applied; new run fields and indexes verified; invalid key rejected 422 without analysis; v4 review and finding resolutions retained",
+  "preservedPreview": {
+    "claimNumber": "CLM-2026-000004",
+    "summaryVersion": 4,
+    "reviewCount": 1,
+    "currentFindingCount": 3,
+    "resolvedCount": 2
+  },
+  "limitations": [
+    "synchronous processing transaction still spans OCR/model calls",
+    "physical process-kill/multi-instance staging chaos acceptance remains pending",
+    "no automatic provider retry; external billing is not exactly once"
+  ]
+}

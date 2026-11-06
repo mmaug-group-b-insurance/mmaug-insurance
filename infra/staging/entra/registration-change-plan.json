@@ -1,0 +1,73 @@
+{
+  "status": "DRAFT_NOT_APPLIED",
+  "tenantId": "71beefd7-29f4-4b9e-9cb2-e78b5dc851ad",
+  "api": {
+    "existingClientId": "09ad3a12-27c0-41eb-a6c1-ac8d7bfaa98f",
+    "preserveDisplayName": "mmaug_insurance_app",
+    "preserveIdentifierUri": "api://09ad3a12-27c0-41eb-a6c1-ac8d7bfaa98f/access_as_user",
+    "preserveFullDelegatedScope": "api://09ad3a12-27c0-41eb-a6c1-ac8d7bfaa98f/access_as_user/mmaug_insurance_app",
+    "requestedAccessTokenVersion": 2,
+    "rolesToAddAfterReadingExistingRoles": [
+      {
+        "id": "7eb96883-5a38-5515-8411-e6417e19ec2b",
+        "allowedMemberTypes": [
+          "User"
+        ],
+        "displayName": "Claims officer",
+        "value": "CLAIMS_OFFICER",
+        "description": "Prepare and review motor-damage claims; no automated claim decisions.",
+        "isEnabled": true
+      },
+      {
+        "id": "4036675d-c35b-5990-8c9d-6aa960e74cb9",
+        "allowedMemberTypes": [
+          "User"
+        ],
+        "displayName": "Application administrator",
+        "value": "ADMIN",
+        "description": "Manage approved application administration; no automatic claim adjudication.",
+        "isEnabled": true
+      }
+    ]
+  },
+  "spa": {
+    "proposedDisplayName": "mmaug_insurance_spa",
+    "signInAudience": "AzureADMyOrg",
+    "clientId": null,
+    "redirectUris": [
+      "http://localhost:5174"
+    ],
+    "implicitGrantEnabled": false,
+    "clientSecretRequired": false,
+    "requiredDelegatedApiScope": "api://09ad3a12-27c0-41eb-a6c1-ac8d7bfaa98f/access_as_user/mmaug_insurance_app",
+    "uiRolesToAddForUnchangedFrontend": [
+      {
+        "id": "149cba86-7177-5d7a-a0ed-0b3e5a8a4894",
+        "allowedMemberTypes": [
+          "User"
+        ],
+        "displayName": "Claims officer",
+        "value": "CLAIMS_OFFICER",
+        "description": "Prepare and review motor-damage claims; no automated claim decisions.",
+        "isEnabled": true
+      },
+      {
+        "id": "5ae6f3a3-3252-5c67-b606-b5d3e438f471",
+        "allowedMemberTypes": [
+          "User"
+        ],
+        "displayName": "Application administrator",
+        "value": "ADMIN",
+        "description": "Manage approved application administration; no automatic claim adjudication.",
+        "isEnabled": true
+      }
+    ]
+  },
+  "assignmentPlan": {
+    "officerTestAccount": "fumeh34@gmail.com",
+    "assignRole": "CLAIMS_OFFICER",
+    "assignToBothEnterpriseApplications": true,
+    "assignAdminByDefault": false
+  },
+  "note": "Review all live objects before applying. This file is a change plan, not an executable Graph PATCH. Preserve existing roles, scopes, owners and grants; do not replace arrays blindly."
+}

@@ -44,6 +44,8 @@ Workflow:
 
 
 ### DevOps Requirements 
+
+Windows Java setup and current build/test evidence: [Java build baseline](docs/java-build-baseline.md).
 - PR controls (this README rule)
 - Automated tests (GitHub Actions)
 - Dependency scanning (Dependabot)

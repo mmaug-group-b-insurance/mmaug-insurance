@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface AgentRunRepository extends JpaRepository<AgentRun, UUID> {
 
     List<AgentRun> findAllByClaimIdOrderByCreatedAtDesc(UUID claimId);
+    java.util.Optional<AgentRun> findFirstByClaimIdAndStatusInOrderByCreatedAtDesc(UUID claimId, java.util.Collection<AgentRunStatus> statuses);
+    java.util.Optional<AgentRun> findFirstByClaimIdOrderByCreatedAtDesc(UUID claimId);
 }
