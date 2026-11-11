@@ -1,0 +1,29 @@
+name: Staging deployment access check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  access:
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Sign in with dedicated federated deployment identity
+        uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Verify target apps are readable; no deployment or secret retrieval
+        run: |
+          set -euo pipefail
+          for app in app-mmaug-api-stg-01 app-mmaug-web-stg-01; do
+            az webapp show --resource-group rg_mmaug_insurance --name "$app" \
+              --query '{name:name,state:state,host:defaultHostName}' --output json
+          done
+          # Read access does not prove deployment-write permission or SCM connectivity.
