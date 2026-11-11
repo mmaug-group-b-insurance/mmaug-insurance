@@ -1,0 +1,90 @@
+name: Staging release packages
+on:
+  workflow_dispatch:
+    inputs:
+      spa_client_id:
+        description: Administrator-confirmed SPA client ID (public configuration)
+        required: true
+        type: string
+      api_scope:
+        description: Administrator-confirmed full delegated API scope URI
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  package:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      MMAUG_RUN_LIVE_OCR: 'false'
+      MMAUG_RUN_LIVE_MODEL: 'false'
+      VITE_API_BASE_URL: https://app-mmaug-api-stg-01-h0hjhnegc4ejgff0.eastus-01.azurewebsites.net/api/v1
+      VITE_ENTRA_CLIENT_ID: ${{ inputs.spa_client_id }}
+      VITE_ENTRA_TENANT_ID: 71beefd7-29f4-4b9e-9cb2-e78b5dc851ad
+      VITE_ENTRA_AUTHORITY: https://login.microsoftonline.com/71beefd7-29f4-4b9e-9cb2-e78b5dc851ad
+      VITE_ENTRA_REDIRECT_URI: https://app-mmaug-web-stg-01-bpd6hug0b6drhwah.eastus-01.azurewebsites.net
+      VITE_ENTRA_API_SCOPE: ${{ inputs.api_scope }}
+      VITE_ENV_NAME: Staging - synthetic claims only
+      VITE_APP_VERSION: ${{ github.sha }}
+      VITE_DEV_BYPASS_AUTH: 'false'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Validate public build inputs
+        run: |
+          python3 - <<'PY'
+          import os, uuid
+          client_id = uuid.UUID(os.environ['VITE_ENTRA_CLIENT_ID'])
+          if client_id.int == 0:
+              raise SystemExit('A real SPA client ID is required')
+          scope = os.environ['VITE_ENTRA_API_SCOPE']
+          if not scope.startswith('api://') or any(c.isspace() for c in scope) or scope.count('/') < 3:
+              raise SystemExit('A full delegated API scope URI is required')
+          # Syntax checks do not establish consent, redirects, roles or assignments.
+          PY
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: mmaug-claims-agent-backend/pom.xml
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Verify backend with isolated PostgreSQL
+        working-directory: mmaug-claims-agent-backend
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -ntp verify
+      - name: Verify and build frontend with staging configuration
+        working-directory: frontend
+        run: |
+          npm ci --ignore-scripts --no-audit
+          npm audit
+          npm run typecheck
+          npm test
+          npm run build
+      - name: Package immutable release candidates
+        run: |
+          mkdir release
+          cp mmaug-claims-agent-backend/target/mmaug-claims-agent-backend-*.jar release/app.jar
+          (cd frontend/dist && zip -qr ../../release/frontend.zip . -x '*.map')
+          python3 - <<'PY'
+          import json, os, pathlib
+          fields = {k: v for k, v in os.environ.items() if k.startswith('VITE_')}
+          manifest = {'commit': os.environ['GITHUB_SHA'], 'runId': os.environ['GITHUB_RUN_ID'],
+                      'frontendBuildConfiguration': fields,
+                      'deploymentStatus': 'NOT_DEPLOYED', 'dataScope': 'synthetic-only'}
+          pathlib.Path('release/manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+          PY
+          (cd release && sha256sum app.jar frontend.zip manifest.json > SHA256SUMS)
+      - name: Retain packages for review; no Azure login or deployment
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: staging-candidate-${{ github.sha }}
+          path: release/
+          retention-days: 7
+          if-no-files-found: error

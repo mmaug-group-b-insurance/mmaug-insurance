@@ -1,0 +1,21 @@
+{
+  "SPRING_PROFILES_ACTIVE": "staging",
+  "ENTRA_ISSUER_URI": "https://login.microsoftonline.com/71beefd7-29f4-4b9e-9cb2-e78b5dc851ad/v2.0",
+  "ENTRA_AUDIENCE": "REPLACE_WITH_VERIFIED_ACCESS_TOKEN_AUDIENCE",
+  "STAGING_CORS_ORIGINS": "https://app-mmaug-web-stg-01-bpd6hug0b6drhwah.eastus-01.azurewebsites.net",
+  "DB_URL": "jdbc:postgresql://REPLACE_WITH_APPROVED_DATABASE_HOST:5432/mmaug_claims?sslmode=verify-full",
+  "DB_USERNAME": "REPLACE_WITH_APPLICATION_DATABASE_USER",
+  "DB_PASSWORD": "@Microsoft.KeyVault(VaultName=kv-mmaug-claims-stg-01;SecretName=db-password)",
+  "PII_ENCRYPTION_KEY": "@Microsoft.KeyVault(VaultName=kv-mmaug-claims-stg-01;SecretName=pii-encryption-key;SecretVersion=REPLACE_WITH_PRESERVED_KEY_VERSION)",
+  "DOCINTEL_ENDPOINT": "https://mmaug-claims-docintel-01.cognitiveservices.azure.com/",
+  "DOCINTEL_KEY": "@Microsoft.KeyVault(VaultName=kv-mmaug-claims-stg-01;SecretName=docintel-key)",
+  "AI_ENDPOINT": "https://mmaug-claims-openai-01.openai.azure.com/",
+  "AI_DEPLOYMENT": "gpt-6.1-sol",
+  "AI_KEY": "@Microsoft.KeyVault(VaultName=kv-mmaug-claims-stg-01;SecretName=ai-key)",
+  "STORAGE_BLOB_ENDPOINT": "https://stmmaugclaimsstg01.blob.core.windows.net",
+  "DEFENDER_QUEUE_ENDPOINT": "https://stmmaugclaimsstg01.queue.core.windows.net/defender-results",
+  "DEFENDER_EXPECTED_TOPIC": "/subscriptions/9a2ab22e-5269-4da3-a16a-eeed2b0c09aa/resourceGroups/rg_mmaug_insurance/providers/Microsoft.EventGrid/topics/evgt-mmaug-malware-results-stg",
+  "SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE": "5",
+  "SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE": "1",
+  "SCM_DO_BUILD_DURING_DEPLOYMENT": "false"
+}

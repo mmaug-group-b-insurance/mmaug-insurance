@@ -1,0 +1,14 @@
+-- Run interactively with psql as the database administrator through the private network.
+-- This is an INITIALIZATION script, not a rerunnable migration. First inspect existing
+-- roles/databases. Do not use if mmaug_app or mmaug_claims already exists.
+-- The password is entered through psql's hidden prompt, never in SQL text/history.
+\set ON_ERROR_STOP on
+CREATE ROLE mmaug_app LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
+\password mmaug_app
+CREATE DATABASE mmaug_claims OWNER mmaug_app;
+\connect mmaug_claims
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE, CREATE ON SCHEMA public TO mmaug_app;
+-- Staging simplicity: mmaug_app owns the application database and runs Flyway.
+-- This is not server administration. Separating migration/runtime privileges requires
+-- a separate migration execution step before disabling runtime Flyway.
