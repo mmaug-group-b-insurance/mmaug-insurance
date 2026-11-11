@@ -1,0 +1,54 @@
+{
+  "testedAtUtc": "2026-11-11T10:08:11.8929003Z",
+  "branch": "feature/officer-intake-scope",
+  "jarSha256": "73798D5A68D6F0AD8F53599A1196BD067325CC040377CCD235746EB22AE02D9E",
+  "backendTests": {
+    "total": 159,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2
+  },
+  "frontendChecks": {
+    "unitTestsPassed": 35,
+    "typecheckPassed": true,
+    "productionBuildPassed": true,
+    "npmAuditProdVulnerabilities": 0
+  },
+  "evaluationChecks": {
+    "unitTestsPassed": 5,
+    "manifestCasesValidated": 12
+  },
+  "iacChecks": {
+    "bicepCliVersion": "0.49.2",
+    "bicepBuildExitCode": 0,
+    "bicepBuildParamsExitCode": 0
+  },
+  "smokeChecks": {
+    "readiness": 200,
+    "anonymousClaims": 401,
+    "anonymousMetrics": 401,
+    "allowedPreflight": 200,
+    "deniedPreflight": 403,
+    "flywayVersion": "17",
+    "restoredSyntheticSnapshot": true,
+    "acceptedHistoryPreserved": true
+  },
+  "restoreChecks": {
+    "isolatedRestore": true,
+    "sourceUnchanged": true,
+    "allComparedRowsMatched": true,
+    "flywayVersion": "17",
+    "dumpSha256": "DA517875862252360DFF92425365C0FDF917D60FEFFFA672E64003BDE452DAF1"
+  },
+  "azureReadOnlyStatus": {
+    "apiWebAppState": "Running",
+    "frontendWebAppState": "Running",
+    "defenderOnUploadEnabled": false,
+    "adminDependenciesOpen": [
+      "Key Vault RBAC & secret bootstrap (db-password, docintel-key, ai-key, preserved pii-encryption-key)",
+      "Retained database restore/verification on pg-mmaug-claims-stg-01",
+      "Defender on-upload malware scanning (capGBPerMonth=1, topic evgt-mmaug-malware-results-stg)",
+      "Entra SPA redirect URI and officer role assignment confirmation"
+    ]
+  }
+}
