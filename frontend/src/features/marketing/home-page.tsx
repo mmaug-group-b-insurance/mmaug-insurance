@@ -63,11 +63,14 @@ function Hero() {
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
             Process motor claims with traceable evidence and human oversight.
           </h1>
-          <p className="mt-4 max-w-xl text-base text-muted-foreground">
-            The MMAUG Insurance Claims Agent helps claims teams organise documents, surface missing
-            information, and prepare evidence-linked summaries — while authorised officers remain
-            accountable for material decisions.
-          </p>
+          <div className="mt-4 max-w-xl space-y-3 text-base text-muted-foreground">
+            <p>
+              The MMAUG Insurance Claims Agent is a solution built as part of the Malta Microsoft AI User Group (MMAUG) AI & DevOps Fundamentals Bootcamp 2026. The solution is for demo/educational purposes and not to be regarded as a production-ready system.
+            </p>
+            <p>
+              The solution helps claims teams organise documents, surface missing information, and prepare evidence-linked summaries — while authorised officers remain accountable for material decisions.
+            </p>
+          </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link to="/login">
               <Button size="lg">
