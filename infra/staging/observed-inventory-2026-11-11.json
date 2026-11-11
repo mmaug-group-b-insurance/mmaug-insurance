@@ -1,0 +1,147 @@
+﻿{
+    "inspectedAtUtc":  "2026-11-11T10:05:28.9222964Z",
+    "resourceGroup":  {
+                          "id":  "/subscriptions/9a2ab22e-5269-4da3-a16a-eeed2b0c09aa/resourceGroups/rg_mmaug_insurance",
+                          "location":  "northeurope",
+                          "name":  "rg_mmaug_insurance"
+                      },
+    "resources":  [
+                      {
+                          "value":  [
+                                        {
+                                            "kind":  "FormRecognizer",
+                                            "location":  "eastus",
+                                            "name":  "mmaug-claims-docintel-01",
+                                            "type":  "Microsoft.CognitiveServices/accounts"
+                                        },
+                                        {
+                                            "kind":  "StorageV2",
+                                            "location":  "eastus",
+                                            "name":  "stmmaugclaimsstg01",
+                                            "type":  "Microsoft.Storage/storageAccounts"
+                                        },
+                                        {
+                                            "kind":  "Azure",
+                                            "location":  "eastus",
+                                            "name":  "evgt-mmaug-malware-results-stg",
+                                            "type":  "Microsoft.EventGrid/topics"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "eastus",
+                                            "name":  "vnet-mmaug-claims-stg-eus",
+                                            "type":  "Microsoft.Network/virtualNetworks"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "global",
+                                            "name":  "privatelink.blob.core.windows.net",
+                                            "type":  "Microsoft.Network/privateDnsZones"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "global",
+                                            "name":  "privatelink.blob.core.windows.net/sntne6xlxfa6s",
+                                            "type":  "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "global",
+                                            "name":  "privatelink.queue.core.windows.net",
+                                            "type":  "Microsoft.Network/privateDnsZones"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "global",
+                                            "name":  "privatelink.queue.core.windows.net/sntne6xlxfa6s",
+                                            "type":  "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "global",
+                                            "name":  "pg-mmaug-claims-stg-01.private.postgres.database.azure.com",
+                                            "type":  "Microsoft.Network/privateDnsZones"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "centralus",
+                                            "name":  "rg_mmaug_insurance-vnet",
+                                            "type":  "Microsoft.Network/virtualNetworks"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "global",
+                                            "name":  "pg-mmaug-claims-stg-01.private.postgres.database.azure.com/7jqs7ilbeo3qi",
+                                            "type":  "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "centralus",
+                                            "name":  "pg-mmaug-claims-stg-01",
+                                            "type":  "Microsoft.DBforPostgreSQL/flexibleServers"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "eastus",
+                                            "name":  "kv-mmaug-claims-stg-01",
+                                            "type":  "Microsoft.KeyVault/vaults"
+                                        },
+                                        {
+                                            "kind":  "linux",
+                                            "location":  "eastus",
+                                            "name":  "asp-mmaug-stg",
+                                            "type":  "Microsoft.Web/serverFarms"
+                                        },
+                                        {
+                                            "kind":  "app,linux",
+                                            "location":  "eastus",
+                                            "name":  "app-mmaug-api-stg-01",
+                                            "type":  "Microsoft.Web/sites"
+                                        },
+                                        {
+                                            "kind":  "app,linux",
+                                            "location":  "eastus",
+                                            "name":  "app-mmaug-web-stg-01",
+                                            "type":  "Microsoft.Web/sites"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "global",
+                                            "name":  "pg-mmaug-claims-stg-01.private.postgres.database.azure.com/link-postgres-eus-app",
+                                            "type":  "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "global",
+                                            "name":  "privatelink.vaultcore.azure.net",
+                                            "type":  "Microsoft.Network/privateDnsZones"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "global",
+                                            "name":  "privatelink.vaultcore.azure.net/sntne6xlxfa6s",
+                                            "type":  "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+                                        },
+                                        {
+                                            "kind":  null,
+                                            "location":  "eastus",
+                                            "name":  "id-mmaug-github-stg",
+                                            "type":  "Microsoft.ManagedIdentity/userAssignedIdentities"
+                                        },
+                                        {
+                                            "kind":  "AIServices",
+                                            "location":  "swedencentral",
+                                            "name":  "fr-mmaug-insurance",
+                                            "type":  "Microsoft.CognitiveServices/accounts"
+                                        },
+                                        {
+                                            "kind":  "AIServices",
+                                            "location":  "swedencentral",
+                                            "name":  "fr-mmaug-insurance/mmaug-foundry-project",
+                                            "type":  "Microsoft.CognitiveServices/accounts/projects"
+                                        }
+                                    ],
+                          "Count":  22
+                      }
+                  ]
+}
