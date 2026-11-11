@@ -88,6 +88,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers("/api/v1/me").authenticated()
                         .requestMatchers("/internal/tools/**").hasRole("SERVICE_AGENT")
                         .requestMatchers(HttpMethod.GET, "/api/v1/audit-events").hasAnyRole("AUDITOR", "ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN", "CLAIMS_OFFICER")
