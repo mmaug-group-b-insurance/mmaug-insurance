@@ -9,7 +9,7 @@ interface RoleGuardProps {
 }
 
 export function RoleGuard({ roles, children }: RoleGuardProps) {
-  const { isAuthenticated, isLoading, hasRole } = useAuth();
+  const { isAuthenticated, isLoading, hasRole, profileUnavailable, retryProfile } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -20,8 +20,12 @@ export function RoleGuard({ roles, children }: RoleGuardProps) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
+  if (profileUnavailable) {
+    return <div role="alert" className="p-6">The claims API is unavailable. <button className="underline" onClick={() => void retryProfile()}>Try again</button></div>;
+  }
+
   if (!hasRole(roles)) {
-    return <Navigate to="/app/403" replace />;
+    return <Navigate to="/403" replace />;
   }
 
   return <>{children}</>;

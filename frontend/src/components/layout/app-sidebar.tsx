@@ -22,7 +22,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: "/app", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/app/claims", label: "Claims", icon: FileText },
-  { to: "/app/claims/new", label: "New Claim", icon: PlusCircle, roles: ["CLAIMANT", "CLAIMS_OFFICER"] },
+  { to: "/app/claims/new", label: "New Claim", icon: PlusCircle, roles: ["CLAIMS_OFFICER"] },
   { to: "/app/audit", label: "Audit Log", icon: ScrollText, roles: ["AUDITOR", "ADMIN"] },
   { to: "/app/about", label: "About", icon: Info, roles: ["ADMIN", "CLAIMS_OFFICER"] },
 ];

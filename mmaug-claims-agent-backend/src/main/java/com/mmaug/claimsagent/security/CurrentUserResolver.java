@@ -13,7 +13,11 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import com.mmaug.claimsagent.common.exception.ForbiddenException;
+
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -21,6 +25,9 @@ public class CurrentUserResolver implements HandlerMethodArgumentResolver {
 
     @Value("${app.security.enabled:true}")
     private boolean securityEnabled;
+
+    @Value("${app.security.delegated-scope:mmaug_insurance_app}")
+    private String delegatedScope;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -54,9 +61,21 @@ public class CurrentUserResolver implements HandlerMethodArgumentResolver {
                     .map(a -> a.getAuthority().replace("ROLE_", ""))
                     .map(Role::valueOf)
                     .collect(Collectors.toSet());
+            String scopes = jwt.getClaimAsString("scp");
+            if (scopes == null || !List.of(scopes.split(" ")).contains(delegatedScope)) {
+                throw new ForbiddenException("The delegated claims API scope is required");
+            }
+            String oid = jwt.getClaimAsString("oid");
+            UUID actor;
+            try {
+                actor = UUID.fromString(oid);
+            } catch (IllegalArgumentException | NullPointerException invalid) {
+                throw new ForbiddenException("An officer directory object ID is required");
+            }
+            if (!actor.toString().equalsIgnoreCase(oid)) throw new ForbiddenException("Invalid directory object ID");
             return new CurrentUser(
-                    jwt.getSubject(),
-                    jwt.getClaimAsString("oid"),
+                    actor.toString(),
+                    oid,
                     jwt.getClaimAsString("email"),
                     roles
             );

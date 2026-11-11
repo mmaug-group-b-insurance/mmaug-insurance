@@ -53,7 +53,16 @@ class GroundedWorkflowIntegrationTest {
   r.add("app.storage.base-path",()->storage.toString());r.add("app.security.enabled",()->"true");r.add("app.docintel.provider",()->"stub");
   r.add("app.ai.summary-provider",()->"deterministic");
  }
- private org.springframework.test.web.servlet.request.RequestPostProcessor officer(){return request->{request.setRemoteAddr(clientAddress);return jwt().jwt(j->j.subject("00000000-0000-0000-0000-000000000001")).authorities(new SimpleGrantedAuthority("ROLE_CLAIMS_OFFICER")).postProcessRequest(request);};}
+ private org.springframework.test.web.servlet.request.RequestPostProcessor officer() {
+  return officer("00000000-0000-0000-0000-000000000001");
+ }
+ private org.springframework.test.web.servlet.request.RequestPostProcessor officer(String oid) {
+  return request -> {
+   request.setRemoteAddr(clientAddress);
+   return jwt().jwt(j -> j.subject("opaque-pairwise-subject").claim("oid", oid).claim("scp", "mmaug_insurance_app"))
+           .authorities(new SimpleGrantedAuthority("ROLE_CLAIMS_OFFICER")).postProcessRequest(request);
+  };
+ }
  private JsonNode getJson(String url)throws Exception{return json.readTree(mvc.perform(get(url).with(officer())).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());}
  private String analyse(String claim)throws Exception{return json.readTree(mvc.perform(post("/api/v1/claims/"+claim+"/analyse").with(officer()).contentType("application/json").content("{}")).andExpect(status().isAccepted()).andReturn().getResponse().getContentAsString()).path("runId").asText();}
  private String freshClaim()throws Exception{
@@ -74,6 +83,46 @@ class GroundedWorkflowIntegrationTest {
   assertThat(listed.size()).isEqualTo(1);
   assertThat(listed.get(0).path("claimantName").asText()).isEqualTo("Synthetic recovery test");
  }
+ @Test void onlyAssignedOfficerCanReopenCaseAndUseItsPrivateDocuments() throws Exception {
+  String claim = freshClaim();
+  String base = "/api/v1/claims/" + claim;
+  uploadSynthetic(claim, 42);
+  String document = getJson(base + "/documents").get(0).path("id").asText();
+  String number = getJson(base).path("claim").path("claimNumber").asText();
+  String assigned = UUID.randomUUID().toString();
+  var colleague = officer(assigned);
+  mvc.perform(get(base)).andExpect(status().isUnauthorized());
+  mvc.perform(get("/api/v1/claims").param("claimNumber", number).with(colleague))
+          .andExpect(status().isOk()).andExpect(jsonPath("$.content").isEmpty());
+  for (String path : List.of(base, base + "/documents", base + "/summary", base + "/findings",
+          base + "/reviews", base + "/agent-runs", "/api/v1/documents/" + document + "/download")) {
+   mvc.perform(get(path).with(colleague)).andExpect(status().isForbidden());
+  }
+  mvc.perform(multipart(base + "/documents").file("file", new byte[]{1}).with(colleague))
+          .andExpect(status().isForbidden());
+  db.update("update claim set assigned_officer_id=null where id=?::uuid", claim);
+  mvc.perform(get(base).with(officer())).andExpect(status().isOk());
+  mvc.perform(get(base).with(colleague)).andExpect(status().isForbidden());
+  db.update("update claim set assigned_officer_id=?::uuid where id=?::uuid", assigned, claim);
+  mvc.perform(get(base).with(colleague)).andExpect(status().isOk());
+  mvc.perform(get(base).with(officer())).andExpect(status().isForbidden());
+  mvc.perform(get("/api/v1/documents/" + document + "/download").with(officer())).andExpect(status().isForbidden());
+ }
+
+ @Test void officerRequiresDelegatedScopeAndValidDirectoryIdentity() throws Exception {
+  var role = new SimpleGrantedAuthority("ROLE_CLAIMS_OFFICER");
+  mvc.perform(get("/api/v1/me").with(jwt().jwt(j -> j.claim("oid", UUID.randomUUID().toString())).authorities(role)))
+          .andExpect(status().isForbidden());
+  mvc.perform(get("/api/v1/me").with(jwt().jwt(j -> j.claim("scp", "mmaug_insurance_app")).authorities(role)))
+          .andExpect(status().isForbidden());
+ }
+
+ @Test void seededDatasetMeetsRfpTwentyPolicyAndTwelveClaimCatalogue() {
+  assertThat(db.queryForObject("select count(*) from customer where customer_number like 'CUS-00%'", Integer.class)).isEqualTo(20);
+  assertThat(db.queryForObject("select count(*) from policy where policy_number like 'POL-MT-1000%'", Integer.class)).isEqualTo(20);
+  assertThat(db.queryForObject("select count(*) from claim where claim_number between 'CLM-2026-000001' and 'CLM-2026-000012'", Integer.class)).isEqualTo(12);
+ }
+
  private void uploadSynthetic(String claim,int marker)throws Exception{
   mvc.perform(multipart("/api/v1/claims/"+claim+"/documents").file(new MockMultipartFile("file","recovery-"+marker+".png","image/png",new byte[]{(byte)0x89,0x50,0x4e,0x47,(byte)marker})).with(officer())).andExpect(status().isCreated());
  }
@@ -319,7 +368,7 @@ class GroundedWorkflowIntegrationTest {
  }
  @Test void failedOcrPersistsFailureWithoutSummaryOrFabricatedToolCalls()throws Exception{
   when(ocr.analyse(any(),any())).thenReturn(DocumentIntelligenceClientWrapper.OcrResult.failed("OCR_UNAVAILABLE","Synthetic outage"));
-  String claim=db.queryForObject("select id from claim where claim_number='CLM-2026-000002'",String.class);
+  String claim=freshClaim();
   String base="/api/v1/claims/"+claim;
   var upload=json.readTree(mvc.perform(multipart(base+"/documents").file(new MockMultipartFile("file","outage.png","image/png",new byte[]{(byte)0x89,0x50,0x4e,0x47,1})).with(officer())).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());
   var run=getJson("/api/v1/agent-runs/"+analyse(claim));
@@ -328,7 +377,7 @@ class GroundedWorkflowIntegrationTest {
   mvc.perform(get(base+"/summary").with(officer())).andExpect(status().isNotFound());
  }
  @Test void quarantinedEvidenceNeverReachesOcrOrSummary()throws Exception{
-  String claim=db.queryForObject("select id from claim where claim_number='CLM-2026-000003'",String.class);
+  String claim=freshClaim();
   String base="/api/v1/claims/"+claim;
   var upload=json.readTree(mvc.perform(multipart(base+"/documents").file(new MockMultipartFile("file","quarantine.png","image/png",new byte[]{(byte)0x89,0x50,0x4e,0x47,2})).with(officer())).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());
   db.update("update claim_document set scan_status='PENDING',processing_status='QUARANTINED' where id=?::uuid",upload.path("id").asText());

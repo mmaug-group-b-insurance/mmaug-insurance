@@ -16,7 +16,7 @@ class DocumentUploadSafetyTest {
   var service=new DocumentService(mock(ClaimRepository.class),documents,new FileValidator(),storage,mock(MalwareScanner.class));
   var claim=new Claim();claim.setCreatedByUserId(UUID.randomUUID());var doc=new ClaimDocument();doc.setId(UUID.randomUUID());doc.setClaim(claim);
   when(documents.findById(doc.getId())).thenReturn(Optional.of(doc));
-  var user=new CurrentUser(UUID.randomUUID().toString(),"synthetic","test@example.invalid",Set.of(Role.CLAIMS_OFFICER));
+  var user=new CurrentUser(claim.getCreatedByUserId().toString(),"synthetic","test@example.invalid",Set.of(Role.CLAIMS_OFFICER));
   for(var status:List.of(ScanStatus.PENDING,ScanStatus.INFECTED,ScanStatus.REJECTED)){
    doc.setScanStatus(status);assertThatThrownBy(()->service.download(doc.getId(),user)).isInstanceOf(UnsafeFileException.class);
   }

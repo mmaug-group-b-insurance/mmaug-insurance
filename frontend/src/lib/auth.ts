@@ -59,25 +59,17 @@ export const loginRequest = {
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
-export function getUserRoles(account: AccountInfo | null): string[] {
-  if (!account) return [];
-  const claims = account.idTokenClaims as Record<string, unknown> | undefined;
-  const roles = claims?.roles;
-  return Array.isArray(roles) ? (roles as string[]) : [];
-}
-
 export async function acquireApiToken(): Promise<string | null> {
   if (isAuthBypassEnabled) return null;
 
-  const accounts = msalInstance.getAllAccounts();
-  if (accounts.length === 0) return null;
-  const account = accounts[0];
+  const account = msalInstance.getActiveAccount();
+  if (!account) return null;
   try {
     const result = await msalInstance.acquireTokenSilent({ ...loginRequest, account });
     return result.accessToken;
   } catch (err) {
     if (err instanceof InteractionRequiredAuthError) {
-      await msalInstance.acquireTokenRedirect(loginRequest);
+      await msalInstance.acquireTokenRedirect({ ...loginRequest, account });
     }
     return null;
   }
@@ -85,5 +77,10 @@ export async function acquireApiToken(): Promise<string | null> {
 
 export async function safeHandleRedirect(): Promise<void> {
   if (isAuthBypassEnabled) return;
-  await msalInstance.handleRedirectPromise();
+  const result = await msalInstance.handleRedirectPromise();
+  if (result?.account) msalInstance.setActiveAccount(result.account);
+  if (!msalInstance.getActiveAccount()) {
+    const accounts = msalInstance.getAllAccounts();
+    if (accounts.length === 1) msalInstance.setActiveAccount(accounts[0]);
+  }
 }

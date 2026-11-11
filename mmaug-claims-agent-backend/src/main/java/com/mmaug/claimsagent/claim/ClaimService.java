@@ -13,6 +13,7 @@ import com.mmaug.claimsagent.customer.Customer;
 import com.mmaug.claimsagent.customer.CustomerService;
 import com.mmaug.claimsagent.policy.Policy;
 import com.mmaug.claimsagent.policy.PolicyService;
+import com.mmaug.claimsagent.security.ClaimAccessPolicy;
 import com.mmaug.claimsagent.security.CurrentUser;
 import com.mmaug.claimsagent.security.Role;
 import jakarta.persistence.criteria.Predicate;
@@ -57,8 +58,8 @@ public class ClaimService {
 
     public ClaimResponse create(CreateClaimRequest request, CurrentUser user) {
         if (user == null) throw new ForbiddenException("Authentication required");
-        if (!user.hasRole(Role.CLAIMANT) && !user.hasRole(Role.CLAIMS_OFFICER)) {
-            throw new ForbiddenException("Only claimants or officers may create claims");
+        if (!user.hasRole(Role.CLAIMS_OFFICER)) {
+            throw new ForbiddenException("Only claims officers may create claims");
         }
 
         // Retry loop guards against a rare concurrent-creation collision on
@@ -73,6 +74,7 @@ public class ClaimService {
                 claim.setStatus(ClaimStatus.DRAFT);
                 claim.setChannel(request.getChannel() != null ? request.getChannel() : ClaimChannel.WEB_PORTAL);
                 claim.setCreatedByUserId(UUID.fromString(user.userId()));
+                claim.setAssignedOfficerId(claim.getCreatedByUserId());
                 claim.setPolicyNumberStated(request.getPolicyNumber());
                 claim.setClaimantName(request.getClaimantName());
                 claim.setClaimantPhone(request.getClaimantPhone());
@@ -138,15 +140,7 @@ public class ClaimService {
         Claim claim = claimRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Claim not found: " + id));
 
-        boolean isOfficer = user.hasRole(Role.CLAIMS_OFFICER);
-        boolean isOwner = user.hasRole(Role.CLAIMANT) && user.userId().equals(claim.getCreatedByUserId().toString());
-
-        if (!isOfficer && !isOwner) {
-            throw new ForbiddenException("Not permitted to update this claim");
-        }
-        if (isOwner && !isOfficer && claim.getStatus() != ClaimStatus.DRAFT) {
-            throw new BusinessValidationException("Only draft claims can be updated by the owner");
-        }
+        ClaimAccessPolicy.requireAssignedOfficer(claim, user);
         if (request.getVersion() != null && !request.getVersion().equals(claim.getVersion())) {
             throw new BusinessValidationException("Claim has been modified by another user");
         }
@@ -173,10 +167,7 @@ public class ClaimService {
         Claim claim = claimRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Claim not found: " + id));
 
-        boolean isOwner = user.userId().equals(claim.getCreatedByUserId().toString());
-        if (!isOwner && !user.hasRole(Role.CLAIMS_OFFICER)) {
-            throw new ForbiddenException("Not permitted to submit this claim");
-        }
+        ClaimAccessPolicy.requireAssignedOfficer(claim, user);
         if (claim.getStatus() != ClaimStatus.DRAFT) {
             throw new BusinessValidationException("Only draft claims can be submitted");
         }
@@ -190,7 +181,7 @@ public class ClaimService {
     @Transactional(readOnly = true)
     public Page<ClaimListItem> search(ClaimSearchCriteria criteria, CurrentUser user) {
         Pageable pageable = toPageable(criteria);
-        Specification<Claim> spec = buildSpec(criteria, user);
+        Specification<Claim> spec = ClaimAccessPolicy.visibleTo(user).and(buildSpec(criteria, user));
         Page<Claim> page = claimRepository.findAll(spec, pageable);
         return page.map(claimMapper::toListItem);
     }
@@ -210,12 +201,6 @@ public class ClaimService {
     private Specification<Claim> buildSpec(ClaimSearchCriteria criteria, CurrentUser user) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-            if (!user.hasRole(Role.CLAIMS_OFFICER)
-                    && !user.hasRole(Role.AUDITOR)
-                    && !user.hasRole(Role.ADMIN)) {
-                predicates.add(cb.equal(root.get("createdByUserId"), UUID.fromString(user.userId())));
-            }
 
             if (criteria.getStatus() != null) {
                 predicates.add(cb.equal(root.get("status"), criteria.getStatus()));
@@ -238,7 +223,7 @@ public class ClaimService {
                 predicates.add(cb.lessThanOrEqualTo(root.get("incidentDate"), criteria.getDateTo()));
             }
             if (Boolean.TRUE.equals(criteria.getAssignedToMe())) {
-                predicates.add(cb.equal(root.get("assignedOfficerId"), UUID.fromString(user.userId())));
+                predicates.add(cb.equal(cb.coalesce(root.<UUID>get("assignedOfficerId"), root.get("createdByUserId")), UUID.fromString(user.userId())));
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
@@ -247,13 +232,7 @@ public class ClaimService {
     private Claim loadAndCheckRead(UUID id, CurrentUser user) {
         Claim claim = claimRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Claim not found: " + id));
-        boolean isOfficer = user.hasRole(Role.CLAIMS_OFFICER);
-        boolean isAuditor = user.hasRole(Role.AUDITOR);
-        boolean isAdmin = user.hasRole(Role.ADMIN);
-        boolean isOwner = user.userId().equals(claim.getCreatedByUserId().toString());
-        if (!isOfficer && !isAuditor && !isAdmin && !isOwner) {
-            throw new ForbiddenException("Not permitted to access this claim");
-        }
+        ClaimAccessPolicy.requireRead(claim, user);
         return claim;
     }
 }

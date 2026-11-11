@@ -4,11 +4,9 @@ import com.mmaug.claimsagent.claim.Claim;
 import com.mmaug.claimsagent.claim.ClaimRepository;
 import com.mmaug.claimsagent.claim.ClaimStatus;
 import com.mmaug.claimsagent.dashboard.dto.DashboardResponse;
+import com.mmaug.claimsagent.security.ClaimAccessPolicy;
 import com.mmaug.claimsagent.security.CurrentUser;
-import com.mmaug.claimsagent.security.Role;
 import com.mmaug.claimsagent.validation.ValidationFindingRepository;
-import jakarta.persistence.criteria.Predicate;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,18 +30,7 @@ public class DashboardService {
     }
 
     public DashboardResponse build(CurrentUser user) {
-        boolean officer = user.hasRole(Role.CLAIMS_OFFICER);
-        boolean auditor = user.hasRole(Role.AUDITOR);
-        boolean admin = user.hasRole(Role.ADMIN);
-
-        Specification<Claim> scope = (root, query, cb) -> {
-            if (officer || auditor || admin) {
-                return cb.conjunction();
-            }
-            return cb.equal(root.get("createdByUserId"), java.util.UUID.fromString(user.userId()));
-        };
-
-        List<Claim> all = claimRepository.findAll(scope);
+        List<Claim> all = claimRepository.findAll(ClaimAccessPolicy.visibleTo(user));
 
         Map<String, Long> statusCounts = new LinkedHashMap<>();
         for (ClaimStatus status : ClaimStatus.values()) {

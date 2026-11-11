@@ -97,7 +97,7 @@ export function ClaimsListPage() {
         title="Claims"
         description={`${query.data?.totalElements ?? 0} claim${query.data?.totalElements === 1 ? "" : "s"} visible`}
         actions={
-          hasRole(["CLAIMANT", "CLAIMS_OFFICER"]) && (
+          hasRole(["CLAIMS_OFFICER"]) && (
             <Link to="/app/claims/new">
               <Button><PlusCircle /> New claim</Button>
             </Link>
@@ -220,7 +220,7 @@ export function ClaimsListPage() {
                             action={
                               hasFilters ? (
                                 <Button variant="outline" onClick={clearFilters}>Clear filters</Button>
-                              ) : hasRole(["CLAIMANT", "CLAIMS_OFFICER"]) ? (
+                              ) : hasRole(["CLAIMS_OFFICER"]) ? (
                                 <Link to="/app/claims/new">
                                   <Button><PlusCircle /> New claim</Button>
                                 </Link>

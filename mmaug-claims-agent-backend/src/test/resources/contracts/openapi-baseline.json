@@ -967,7 +967,7 @@
           "Claims"
         ],
         "summary": "Update draft claim",
-        "description": "Partially updates a draft claim. Owners can edit their own drafts. Officers can edit any claim.",
+        "description": "Partially updates a draft claim. Officers can edit their assigned claims.",
         "operationId": "update",
         "parameters": [
           {

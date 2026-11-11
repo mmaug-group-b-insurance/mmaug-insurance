@@ -74,7 +74,7 @@ export function DashboardPage() {
             : "Your claims and their current status."
         }
         actions={
-          hasRole(["CLAIMANT", "CLAIMS_OFFICER"]) && (
+          hasRole(["CLAIMS_OFFICER"]) && (
             <Link to="/app/claims/new">
               <Button>
                 <PlusCircle /> New claim
@@ -141,7 +141,7 @@ export function DashboardPage() {
                 title="No claims yet"
                 description="Once claims are created they will appear here."
                 action={
-                  hasRole(["CLAIMANT", "CLAIMS_OFFICER"]) ? (
+                  hasRole(["CLAIMS_OFFICER"]) ? (
                     <Link to="/app/claims/new">
                       <Button size="sm"><PlusCircle /> Create a claim</Button>
                     </Link>

@@ -91,6 +91,7 @@ public class SecurityConfig {
                         .requestMatchers("/internal/tools/**").hasRole("SERVICE_AGENT")
                         .requestMatchers(HttpMethod.GET, "/api/v1/audit-events").hasAnyRole("AUDITOR", "ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN", "CLAIMS_OFFICER")
+                        .requestMatchers("/api/v1/**").hasAnyRole("CLAIMS_OFFICER", "AUDITOR", "ADMIN")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt

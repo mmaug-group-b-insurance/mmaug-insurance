@@ -18,6 +18,8 @@ function setAuth(overrides: Partial<ReturnType<typeof useAuth>>) {
     isAuthenticated: false,
     isLoading: false,
     isBypass: false,
+    profileUnavailable: false,
+    retryProfile: vi.fn(),
     signIn: vi.fn(),
     signOut: vi.fn(),
     hasRole: () => false,
@@ -54,7 +56,7 @@ describe("RoleGuard", () => {
     renderWithProviders(
       <Routes>
         <Route path="/app" element={<RoleGuard roles={["CLAIMS_OFFICER"]}><div>officer-only</div></RoleGuard>} />
-        <Route path="/app/403" element={<div>Forbidden target</div>} />
+        <Route path="/403" element={<div>Forbidden target</div>} />
       </Routes>,
       { initialEntries: ["/app"] }
     );

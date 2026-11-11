@@ -1,9 +1,319 @@
 {
-  "scope": "Developer-authored synthetic labelled images; not independent holdout evidence. Labels fixed before live execution.",
+  "scope": "Developer-authored synthetic labelled fixtures (PNG and PDF, varied layout/type sizes) matching the 12-case BRD catalogue (4 complete, 4 incomplete, 4 conflicting). Labels fixed before execution.",
   "cases": [
-    {"id":"matching-policy", "lines":["Policy Number: POL-MT-100001","Vehicle Registration: ABC 123","Incident Date: 2026-09-15","Location: Synthetic evaluation road","Damage Description: Synthetic bumper damage"],"expected":{"policyNumber":"POL-MT-100001","vehicleRegistration":"ABC 123","incidentDate":"2026-09-15","incidentLocation":"Synthetic evaluation road","damageDescription":"Synthetic bumper damage"},"absent":[],"expectedFlags":[]},
-    {"id":"three-discrepancies", "lines":["Policy Number: POL-MT-100002","Vehicle Registration: ZZZ999","Incident Date: 1900-01-01","Location: Synthetic evaluation road","Damage Description: Synthetic door damage"],"expected":{"policyNumber":"POL-MT-100002","vehicleRegistration":"ZZZ999","incidentDate":"1900-01-01","incidentLocation":"Synthetic evaluation road","damageDescription":"Synthetic door damage"},"absent":[],"expectedFlags":["CONTRADICTION","VEHICLE_MISMATCH","POLICY_INACTIVE_ON_DATE"]},
-    {"id":"missing-date-location", "lines":["Policy Number: POL-MT-100001","Vehicle Registration: ABC 123","Damage Description: Synthetic mirror damage"],"expected":{"policyNumber":"POL-MT-100001","vehicleRegistration":"ABC 123","damageDescription":"Synthetic mirror damage"},"absent":["incidentDate","incidentLocation"],"expectedFlags":[]},
-    {"id":"smaller-type-reordered", "fontSize":23,"lines":["Damage Description: Synthetic rear bumper damage","Location: Synthetic evaluation road","Incident Date: 2026-09-15","Vehicle Registration: ABC 123","Policy Number: POL-MT-100001"],"expected":{"policyNumber":"POL-MT-100001","vehicleRegistration":"ABC 123","incidentDate":"2026-09-15","incidentLocation":"Synthetic evaluation road","damageDescription":"Synthetic rear bumper damage"},"absent":[],"expectedFlags":[]}
+    {
+      "id": "matching-policy",
+      "category": "COMPLETE",
+      "format": "png",
+      "policyNumber": "POL-MT-100001",
+      "vehicleRegistration": "ABC 123",
+      "incidentDate": "2026-09-15",
+      "lines": [
+        "Policy Number: POL-MT-100001",
+        "Vehicle Registration: ABC 123",
+        "Incident Date: 2026-09-15",
+        "Location: Synthetic evaluation road",
+        "Damage Description: Synthetic bumper damage"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100001",
+        "vehicleRegistration": "ABC 123",
+        "incidentDate": "2026-09-15",
+        "incidentLocation": "Synthetic evaluation road",
+        "damageDescription": "Synthetic bumper damage"
+      },
+      "absent": [],
+      "expectedFlags": []
+    },
+    {
+      "id": "smaller-type-reordered",
+      "category": "COMPLETE",
+      "format": "png",
+      "fontSize": 23,
+      "policyNumber": "POL-MT-100001",
+      "vehicleRegistration": "ABC 123",
+      "incidentDate": "2026-09-15",
+      "lines": [
+        "Damage Description: Synthetic rear bumper damage",
+        "Location: Synthetic evaluation road",
+        "Incident Date: 2026-09-15",
+        "Vehicle Registration: ABC 123",
+        "Policy Number: POL-MT-100001"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100001",
+        "vehicleRegistration": "ABC 123",
+        "incidentDate": "2026-09-15",
+        "incidentLocation": "Synthetic evaluation road",
+        "damageDescription": "Synthetic rear bumper damage"
+      },
+      "absent": [],
+      "expectedFlags": []
+    },
+    {
+      "id": "complete-pdf-claim-form",
+      "category": "COMPLETE",
+      "format": "pdf",
+      "policyNumber": "POL-MT-100006",
+      "vehicleRegistration": "MNO 345",
+      "incidentDate": "2026-10-04",
+      "lines": [
+        "Policy Number: POL-MT-100006",
+        "Policyholder Name: Clara Galea",
+        "Vehicle Registration: MNO 345",
+        "Incident Date: 2026-10-04",
+        "Location: Vjal il-Labour Naxxar",
+        "Damage Description: Rear bumper impact at crossing",
+        "Estimated Repair Cost: 1150.00",
+        "Currency: EUR"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100006",
+        "policyholderName": "Clara Galea",
+        "vehicleRegistration": "MNO 345",
+        "incidentDate": "2026-10-04",
+        "incidentLocation": "Vjal il-Labour Naxxar",
+        "damageDescription": "Rear bumper impact at crossing",
+        "estimatedRepairCost": "1150.00",
+        "currency": "EUR"
+      },
+      "absent": [],
+      "expectedFlags": []
+    },
+    {
+      "id": "complete-compact-scan",
+      "category": "COMPLETE",
+      "format": "png",
+      "fontSize": 22,
+      "policyNumber": "POL-MT-100008",
+      "vehicleRegistration": "STU 901",
+      "incidentDate": "2026-10-12",
+      "lines": [
+        "Policy Number: POL-MT-100008",
+        "Driver Name: Sophie Attard",
+        "Vehicle Registration: STU 901",
+        "Incident Date: 2026-10-12",
+        "Location: Triq Dun Karm Birkirkara",
+        "Garage: Malta Auto Body Repair",
+        "Damage Description: Nearside wing panel scraped on barrier"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100008",
+        "driverName": "Sophie Attard",
+        "vehicleRegistration": "STU 901",
+        "incidentDate": "2026-10-12",
+        "incidentLocation": "Triq Dun Karm Birkirkara",
+        "garageName": "Malta Auto Body Repair",
+        "damageDescription": "Nearside wing panel scraped on barrier"
+      },
+      "absent": [],
+      "expectedFlags": []
+    },
+    {
+      "id": "missing-date-location",
+      "category": "INCOMPLETE",
+      "format": "png",
+      "policyNumber": "POL-MT-100001",
+      "vehicleRegistration": "ABC 123",
+      "incidentDate": "2026-09-15",
+      "lines": [
+        "Policy Number: POL-MT-100001",
+        "Vehicle Registration: ABC 123",
+        "Damage Description: Synthetic mirror damage"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100001",
+        "vehicleRegistration": "ABC 123",
+        "damageDescription": "Synthetic mirror damage"
+      },
+      "absent": [
+        "incidentDate",
+        "incidentLocation"
+      ],
+      "expectedFlags": []
+    },
+    {
+      "id": "missing-registration-and-cost",
+      "category": "INCOMPLETE",
+      "format": "png",
+      "policyNumber": "POL-MT-100007",
+      "vehicleRegistration": "PQR 678",
+      "incidentDate": "2026-10-08",
+      "lines": [
+        "Policy Number: POL-MT-100007",
+        "Incident Date: 2026-10-08",
+        "Location: Triq Borg Olivier Rabat",
+        "Damage Description: Front left headlight and fender damaged"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100007",
+        "incidentDate": "2026-10-08",
+        "incidentLocation": "Triq Borg Olivier Rabat",
+        "damageDescription": "Front left headlight and fender damaged"
+      },
+      "absent": [
+        "vehicleRegistration",
+        "estimatedRepairCost"
+      ],
+      "expectedFlags": []
+    },
+    {
+      "id": "missing-police-report-and-garage",
+      "category": "INCOMPLETE",
+      "format": "pdf",
+      "policyNumber": "POL-MT-100011",
+      "vehicleRegistration": "BCD 890",
+      "incidentDate": "2026-10-14",
+      "lines": [
+        "Policy Number: POL-MT-100011",
+        "Vehicle Registration: BCD 890",
+        "Incident Date: 2026-10-14",
+        "Location: Triq l-Imdina Zebbug",
+        "Damage Description: Rear-end impact at traffic lights"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100011",
+        "vehicleRegistration": "BCD 890",
+        "incidentDate": "2026-10-14",
+        "incidentLocation": "Triq l-Imdina Zebbug",
+        "damageDescription": "Rear-end impact at traffic lights"
+      },
+      "absent": [
+        "policeReportNumber",
+        "garageName"
+      ],
+      "expectedFlags": []
+    },
+    {
+      "id": "missing-damage-and-location",
+      "category": "INCOMPLETE",
+      "format": "png",
+      "policyNumber": "POL-MT-100013",
+      "vehicleRegistration": "HIJ 246",
+      "incidentDate": "2026-10-18",
+      "lines": [
+        "Policy Number: POL-MT-100013",
+        "Policyholder Name: Matthew Azzopardi",
+        "Vehicle Registration: HIJ 246",
+        "Incident Date: 2026-10-18"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100013",
+        "policyholderName": "Matthew Azzopardi",
+        "vehicleRegistration": "HIJ 246",
+        "incidentDate": "2026-10-18"
+      },
+      "absent": [
+        "incidentLocation",
+        "damageDescription"
+      ],
+      "expectedFlags": []
+    },
+    {
+      "id": "three-discrepancies",
+      "category": "CONFLICTING",
+      "format": "png",
+      "policyNumber": "POL-MT-100001",
+      "vehicleRegistration": "ABC 123",
+      "incidentDate": "2026-09-15",
+      "lines": [
+        "Policy Number: POL-MT-100002",
+        "Vehicle Registration: ZZZ999",
+        "Incident Date: 1900-01-01",
+        "Location: Synthetic evaluation road",
+        "Damage Description: Synthetic door damage"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100002",
+        "vehicleRegistration": "ZZZ999",
+        "incidentDate": "1900-01-01",
+        "incidentLocation": "Synthetic evaluation road",
+        "damageDescription": "Synthetic door damage"
+      },
+      "absent": [],
+      "expectedFlags": [
+        "CONTRADICTION",
+        "VEHICLE_MISMATCH",
+        "POLICY_INACTIVE_ON_DATE"
+      ]
+    },
+    {
+      "id": "conflict-vehicle-registration",
+      "category": "CONFLICTING",
+      "format": "png",
+      "policyNumber": "POL-MT-100009",
+      "vehicleRegistration": "VWX 234",
+      "incidentDate": "2026-10-10",
+      "lines": [
+        "Policy Number: POL-MT-100009",
+        "Vehicle Registration: ZZ 9999",
+        "Incident Date: 2026-10-10",
+        "Location: Triq l-Istabal Qormi",
+        "Damage Description: Side doors scraped during lane merge"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100009",
+        "vehicleRegistration": "ZZ 9999",
+        "incidentDate": "2026-10-10",
+        "incidentLocation": "Triq l-Istabal Qormi",
+        "damageDescription": "Side doors scraped during lane merge"
+      },
+      "absent": [],
+      "expectedFlags": [
+        "VEHICLE_MISMATCH"
+      ]
+    },
+    {
+      "id": "conflict-inactive-policy-date",
+      "category": "CONFLICTING",
+      "format": "pdf",
+      "policyNumber": "POL-MT-100003",
+      "vehicleRegistration": "GHI 789",
+      "incidentDate": "2026-10-05",
+      "lines": [
+        "Policy Number: POL-MT-100003",
+        "Vehicle Registration: GHI 789",
+        "Incident Date: 2026-10-05",
+        "Location: Triq it-Torri Sliema",
+        "Damage Description: Front grille and bonnet damaged in collision"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100003",
+        "vehicleRegistration": "GHI 789",
+        "incidentDate": "2026-10-05",
+        "incidentLocation": "Triq it-Torri Sliema",
+        "damageDescription": "Front grille and bonnet damaged in collision"
+      },
+      "absent": [],
+      "expectedFlags": [
+        "POLICY_INACTIVE_ON_DATE"
+      ]
+    },
+    {
+      "id": "conflict-policy-number-mismatch",
+      "category": "CONFLICTING",
+      "format": "png",
+      "policyNumber": "POL-MT-100010",
+      "vehicleRegistration": "YZA 567",
+      "incidentDate": "2026-08-01",
+      "lines": [
+        "Policy Number: POL-MT-100019",
+        "Vehicle Registration: YZA 567",
+        "Incident Date: 2026-08-01",
+        "Location: Triq Ross St Julians",
+        "Damage Description: Front structural damage from boundary wall"
+      ],
+      "expected": {
+        "policyNumber": "POL-MT-100019",
+        "vehicleRegistration": "YZA 567",
+        "incidentDate": "2026-08-01",
+        "incidentLocation": "Triq Ross St Julians",
+        "damageDescription": "Front structural damage from boundary wall"
+      },
+      "absent": [],
+      "expectedFlags": [
+        "CONTRADICTION"
+      ]
+    }
   ]
 }

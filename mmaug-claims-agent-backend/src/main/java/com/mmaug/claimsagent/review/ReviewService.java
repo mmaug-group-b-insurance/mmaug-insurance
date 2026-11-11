@@ -13,6 +13,7 @@ import com.mmaug.claimsagent.common.exception.NotFoundException;
 import com.mmaug.claimsagent.review.dto.CreateReviewRequest;
 import com.mmaug.claimsagent.review.dto.ReviewResponse;
 import com.mmaug.claimsagent.review.dto.StatementEdit;
+import com.mmaug.claimsagent.security.ClaimAccessPolicy;
 import com.mmaug.claimsagent.security.CurrentUser;
 import com.mmaug.claimsagent.security.Role;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,7 @@ public class ReviewService {
         Claim claim = claimRepository.findForDocumentUpload(claimId)
                 .orElseThrow(() -> new NotFoundException("Claim not found: " + claimId));
 
+        ClaimAccessPolicy.requireAssignedOfficer(claim, user);
         ClaimSummary summary = summaryRepository.findById(request.getSummaryId())
                 .orElseThrow(() -> new NotFoundException("Summary not found"));
 
@@ -134,6 +136,8 @@ public class ReviewService {
                 && !user.hasRole(Role.ADMIN)) {
             throw new ForbiddenException("Not permitted to view reviews");
         }
+        Claim claim = claimRepository.findById(claimId).orElseThrow(() -> new NotFoundException("Claim not found"));
+        ClaimAccessPolicy.requireRead(claim, user);
         List<ReviewResponse> out = new ArrayList<>();
         for (OfficerReview r : reviewRepository.findAllByClaimIdOrderByReviewedAtDesc(claimId)) {
             out.add(toResponse(r));

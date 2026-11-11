@@ -39,7 +39,7 @@ const SCAN_LABEL: Record<ClaimDocument["scanStatus"], { label: string; tone: "mu
 export function ClaimDocumentsTab({ claim }: { claim: Claim }) {
   const qc = useQueryClient();
   const { hasRole } = useAuth();
-  const canUpload = hasRole(["CLAIMANT", "CLAIMS_OFFICER"]);
+  const canUpload = hasRole(["CLAIMS_OFFICER"]);
   const canDelete = hasRole(["ADMIN"]);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ClaimDocument | null>(null);

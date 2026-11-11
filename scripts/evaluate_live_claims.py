@@ -78,14 +78,18 @@ def render(case, target):
     draw.text((45, 35), "SYNTHETIC EVALUATION ONLY - " + case["id"], font=font, fill="black")
     for index, line in enumerate(case["lines"]):
         draw.text((45, 125 + index * 90), line, font=font, fill="black")
-    image.save(target)
+    if target.suffix.lower() == ".pdf":
+        image.save(target, "PDF", resolution=150.0)
+    else:
+        image.save(target)
     return target.read_bytes()
 
 
 def upload(base, claim_id, filename, data):
+    mime = "application/pdf" if filename.lower().endswith(".pdf") else "image/png"
     boundary = "mmaug" + uuid.uuid4().hex
     body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{filename}\"\r\n"
-            "Content-Type: image/png\r\n\r\n").encode() + data
+            f"Content-Type: {mime}\r\n\r\n").encode() + data
     body += (f"\r\n--{boundary}\r\nContent-Disposition: form-data; name=\"documentType\"\r\n\r\n"
              f"CLAIM_FORM\r\n--{boundary}--\r\n").encode()
     return request(base, f"/claims/{claim_id}/documents", body,
@@ -134,16 +138,19 @@ def main():
         result = {"case": case["id"], "pass": False}
         report["results"].append(result)
         try:
-            data = render(case, args.output / (case["id"] + ".png"))
+            ext = "." + case.get("format", "png").lower().lstrip(".")
+            data = render(case, args.output / (case["id"] + ext))
             result["fixtureSha256"] = hashlib.sha256(data).hexdigest()
             claim = post(args.base, "/claims", {
-                "policyNumber": "POL-MT-100001", "claimantName": "Synthetic eval " + case["id"],
+                "policyNumber": case.get("policyNumber", "POL-MT-100001"),
+                "claimantName": "Synthetic eval " + case["id"],
                 "claimantPhone": "+12025550123", "claimantEmail": "evaluation@example.invalid",
-                "vehicleRegistration": "ABC 123", "incidentDate": "2026-09-15",
+                "vehicleRegistration": case.get("vehicleRegistration", "ABC 123"),
+                "incidentDate": case.get("incidentDate", "2026-09-15"),
                 "incidentLocation": "Synthetic evaluation road", "incidentDescription": "Synthetic motor accidental damage evaluation only",
                 "injuriesReported": False, "thirdPartyInvolved": False})
             result.update(claimId=claim["id"], claimNumber=claim["claimNumber"])
-            doc = upload(args.base, claim["id"], case["id"] + ".png", data)
+            doc = upload(args.base, claim["id"], case["id"] + ext, data)
             if doc["scanStatus"] != "CLEAN":
                 raise RuntimeError("Document not cleared; no analysis invoked")
             start = time.monotonic()

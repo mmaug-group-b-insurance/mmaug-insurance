@@ -7,6 +7,7 @@ import com.mmaug.claimsagent.common.exception.NotFoundException;
 import com.mmaug.claimsagent.common.util.HashUtil;
 import com.mmaug.claimsagent.document.dto.DocumentResponse;
 import com.mmaug.claimsagent.document.dto.DocumentUploadResponse;
+import com.mmaug.claimsagent.security.ClaimAccessPolicy;
 import com.mmaug.claimsagent.security.CurrentUser;
 import com.mmaug.claimsagent.security.Role;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class DocumentService {
         Claim claim = claimRepository.findForDocumentUpload(claimId)
                 .orElseThrow(() -> new NotFoundException("Claim not found: " + claimId));
 
-        assertCanModify(claim, user);
+        ClaimAccessPolicy.requireAssignedOfficer(claim, user);
 
         long count = documentRepository.countByClaimIdAndDeletedAtIsNull(claimId);
         String validatedContentType = fileValidator.validate(file, count);
@@ -111,7 +112,7 @@ public class DocumentService {
     public List<DocumentResponse> list(UUID claimId, CurrentUser user) {
         Claim claim = claimRepository.findById(claimId)
                 .orElseThrow(() -> new NotFoundException("Claim not found: " + claimId));
-        assertCanRead(claim, user);
+        ClaimAccessPolicy.requireRead(claim, user);
         return documentRepository.findAllByClaimIdAndDeletedAtIsNull(claimId).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -124,7 +125,7 @@ public class DocumentService {
         if (doc.getDeletedAt() != null) {
             throw new NotFoundException("Document not found: " + documentId);
         }
-        assertCanRead(doc.getClaim(), user);
+        ClaimAccessPolicy.requireRead(doc.getClaim(), user);
         return doc;
     }
 
@@ -146,6 +147,7 @@ public class DocumentService {
         boolean isOwner = user.userId().equals(doc.getUploadedByUserId().toString());
         boolean isDraft = doc.getClaim().getStatus() == com.mmaug.claimsagent.claim.ClaimStatus.DRAFT;
 
+        if (!isAdmin) ClaimAccessPolicy.requireAssignedOfficer(doc.getClaim(), user);
         if (!isAdmin && !(isOwner && isDraft)) {
             throw new ForbiddenException("Not permitted to delete this document");
         }
@@ -154,24 +156,6 @@ public class DocumentService {
         claimRepository.findForDocumentUpload(doc.getClaim().getId()).orElseThrow(() -> new NotFoundException("Claim not found"));
         doc.setDeletedAt(Instant.now());
         documentRepository.save(doc);
-    }
-
-    private void assertCanRead(Claim claim, CurrentUser user) {
-        boolean officer = user.hasRole(Role.CLAIMS_OFFICER);
-        boolean auditor = user.hasRole(Role.AUDITOR);
-        boolean admin = user.hasRole(Role.ADMIN);
-        boolean owner = user.userId().equals(claim.getCreatedByUserId().toString());
-        if (!officer && !auditor && !admin && !owner) {
-            throw new ForbiddenException("Not permitted to access this claim's documents");
-        }
-    }
-
-    private void assertCanModify(Claim claim, CurrentUser user) {
-        boolean officer = user.hasRole(Role.CLAIMS_OFFICER);
-        boolean owner = user.userId().equals(claim.getCreatedByUserId().toString());
-        if (!officer && !owner) {
-            throw new ForbiddenException("Not permitted to modify this claim's documents");
-        }
     }
 
     private DocumentResponse toResponse(ClaimDocument doc) {

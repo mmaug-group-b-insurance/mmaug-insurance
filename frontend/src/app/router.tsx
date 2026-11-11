@@ -40,7 +40,7 @@ export function AppRoutes() {
       <Route
         path="/app"
         element={
-          <RoleGuard>
+          <RoleGuard roles={["CLAIMS_OFFICER", "AUDITOR", "ADMIN"]}>
             <AppLayout />
           </RoleGuard>
         }
@@ -50,7 +50,7 @@ export function AppRoutes() {
         <Route
           path="claims/new"
           element={
-            <RoleGuard roles={["CLAIMANT", "CLAIMS_OFFICER"]}>
+            <RoleGuard roles={["CLAIMS_OFFICER"]}>
               <NewClaimPage />
             </RoleGuard>
           }
@@ -60,7 +60,7 @@ export function AppRoutes() {
         <Route
           path="runs/:runId"
           element={
-            <RoleGuard roles={["CLAIMS_OFFICER", "AUDITOR"]}>
+            <RoleGuard roles={["CLAIMS_OFFICER", "AUDITOR", "ADMIN"]}>
               <AgentRunPage />
             </RoleGuard>
           }

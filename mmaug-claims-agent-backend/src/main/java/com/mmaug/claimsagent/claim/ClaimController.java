@@ -81,7 +81,7 @@ public class ClaimController {
         return ResponseEntity.ok(claimService.search(criteria, user));
     }
 
-    @Operation(summary = "Update draft claim", description = "Partially updates a draft claim. Owners can edit their own drafts. Officers can edit any claim.")
+    @Operation(summary = "Update draft claim", description = "Partially updates a draft claim. Officers can edit their assigned claims.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Claim updated"),
             @ApiResponse(responseCode = "400", description = "Validation failed"),

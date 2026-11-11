@@ -8,6 +8,7 @@ import com.mmaug.claimsagent.claim.ClaimFactRepository;
 import com.mmaug.claimsagent.claim.ClaimRepository;
 import com.mmaug.claimsagent.common.exception.ForbiddenException;
 import com.mmaug.claimsagent.common.exception.NotFoundException;
+import com.mmaug.claimsagent.security.ClaimAccessPolicy;
 import com.mmaug.claimsagent.security.CurrentUser;
 import com.mmaug.claimsagent.security.Role;
 import com.mmaug.claimsagent.validation.dto.FindingResponse;
@@ -83,6 +84,7 @@ public class FindingService {
             throw new ForbiddenException("Only claims officers may view findings");
         }
         Claim claim = claimRepository.findById(claimId).orElseThrow(() -> new NotFoundException("Claim not found"));
+        ClaimAccessPolicy.requireRead(claim, user);
         if (runId != null && includeHistory) throw new com.mmaug.claimsagent.common.exception.BusinessValidationException("Choose runId or includeHistory, not both");
         if (runId != null) {
             AgentRun selected = agentRunRepository.findById(runId).orElseThrow(() -> new NotFoundException("Run not found"));
@@ -109,6 +111,7 @@ public class FindingService {
         ValidationFinding finding = findingRepository.findById(findingId)
                 .orElseThrow(() -> new NotFoundException("Finding not found: " + findingId));
 
+        ClaimAccessPolicy.requireAssignedOfficer(finding.getClaim(), user);
         finding.setResolved(true);
         finding.setResolvedByUserId(UUID.fromString(user.userId()));
         finding.setResolvedAt(Instant.now());
