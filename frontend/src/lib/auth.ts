@@ -59,9 +59,7 @@ export const loginRequest = {
 export const msalInstance = new PublicClientApplication(msalConfig);
 
 function getCachedToken(account: AccountInfo): string | null {
-  if ((account as { idToken?: string }).idToken) {
-    return (account as { idToken?: string }).idToken!;
-  }
+  const now = Math.floor(Date.now() / 1000);
   try {
     let fallbackIdToken: string | null = null;
     for (let i = 0; i < sessionStorage.length; i++) {
@@ -72,13 +70,19 @@ function getCachedToken(account: AccountInfo): string | null {
           const item = sessionStorage.getItem(key);
           if (item) {
             const parsed = JSON.parse(item);
-            if (parsed.secret) return parsed.secret;
+            const exp = Number(parsed.expires_on || 0);
+            if (parsed.secret && (!exp || exp > now + 60)) {
+              return parsed.secret;
+            }
           }
         } else if (key.includes("idtoken")) {
           const item = sessionStorage.getItem(key);
           if (item) {
             const parsed = JSON.parse(item);
-            if (parsed.secret) fallbackIdToken = parsed.secret;
+            const exp = Number(parsed.expires_on || 0);
+            if (parsed.secret && (!exp || exp > now + 60)) {
+              fallbackIdToken = parsed.secret;
+            }
           }
         }
       }
