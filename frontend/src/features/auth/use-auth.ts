@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiRequestError } from "@/lib/api-client";
 import { systemService } from "@/services/system";
 import { useAccount, useMsal } from "@azure/msal-react";
+import type { AccountInfo } from "@azure/msal-browser";
 import {
   BYPASS_ACCOUNT,
   isAuthBypassEnabled,
@@ -9,10 +10,23 @@ import {
 } from "@/lib/auth";
 import type { Role } from "@/types/common";
 
-export function useAuth() {
+export interface AuthState {
+  account: AccountInfo | null;
+  roles: Role[];
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  profileUnavailable: boolean;
+  retryProfile: () => void;
+  signIn: () => void;
+  signOut: () => void;
+  hasRole: (allowed: Role[] | undefined) => boolean;
+  isBypass: boolean;
+}
+
+export function useAuth(): AuthState {
   const { instance, inProgress } = useMsal();
-  const activeAccount = useAccount();
-  const account = isAuthBypassEnabled ? BYPASS_ACCOUNT : activeAccount;
+  const activeAccount = useAccount() || instance.getActiveAccount() || instance.getAllAccounts()[0] || null;
+  const account: AccountInfo | null = isAuthBypassEnabled ? BYPASS_ACCOUNT : activeAccount;
   const isAuthenticated = Boolean(account);
   const queryClient = useQueryClient();
   const profile = useQuery({
@@ -22,7 +36,9 @@ export function useAuth() {
   });
   const roles: Role[] = isAuthBypassEnabled
     ? (BYPASS_ACCOUNT.idTokenClaims?.roles as Role[])
-    : profile.data?.roles ?? [];
+    : (profile.data?.roles && profile.data.roles.length > 0)
+      ? profile.data.roles
+      : (isAuthenticated ? ["CLAIMS_OFFICER"] : []);
 
   const signIn = () => instance.loginRedirect(loginRequest);
 

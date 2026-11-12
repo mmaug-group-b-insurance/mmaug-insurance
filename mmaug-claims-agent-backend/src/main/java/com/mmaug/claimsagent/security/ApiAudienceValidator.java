@@ -15,8 +15,14 @@ public final class ApiAudienceValidator implements OAuth2TokenValidator<Jwt> {
         this.requiredAudience = requiredAudience;
     }
     @Override public OAuth2TokenValidatorResult validate(Jwt token) {
-        if (token.getAudience() != null && token.getAudience().contains(requiredAudience)) {
-            return OAuth2TokenValidatorResult.success();
+        if (token.getAudience() != null) {
+            for (String aud : token.getAudience()) {
+                if (aud.equalsIgnoreCase(requiredAudience)
+                        || aud.equalsIgnoreCase("api://" + requiredAudience)
+                        || aud.equalsIgnoreCase("api://" + requiredAudience + "/access_as_user")) {
+                    return OAuth2TokenValidatorResult.success();
+                }
+            }
         }
         return OAuth2TokenValidatorResult.failure(new OAuth2Error("invalid_token",
                 "Access token audience does not identify this API", null));

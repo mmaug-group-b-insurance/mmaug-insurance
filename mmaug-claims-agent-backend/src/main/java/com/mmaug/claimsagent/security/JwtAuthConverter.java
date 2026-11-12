@@ -36,9 +36,9 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
 
     private Set<Role> extractRoles(Jwt jwt) {
         // 1. Check if token contains roles claim directly (e.g. tests or Entra ID P1/P2)
-        List<String> roles = jwt.getClaimAsStringList("roles");
-        if (roles != null && !roles.isEmpty()) {
-            Set<Role> resolved = roles.stream()
+        List<String> tokenRoles = jwt.getClaimAsStringList("roles");
+        if (tokenRoles != null && !tokenRoles.isEmpty()) {
+            Set<Role> resolved = tokenRoles.stream()
                     .map(String::toUpperCase)
                     .filter(this::isKnownRole)
                     .map(Role::valueOf)
@@ -66,13 +66,17 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
 
         if (oid != null && !oid.isBlank()) {
             try {
-                return userService.getRolesForUser(oid, email, name);
+                Set<Role> roles = userService.getRolesForUser(oid, email, name);
+                if (roles != null && !roles.isEmpty()) {
+                    return roles;
+                }
             } catch (Exception e) {
                 log.warn("Could not resolve database roles for user oid '{}': {}", oid, e.getMessage());
             }
         }
 
-        return Set.of();
+        // Default to CLAIMS_OFFICER for any validly authenticated directory user
+        return Set.of(Role.CLAIMS_OFFICER);
     }
 
     private boolean isKnownRole(String name) {

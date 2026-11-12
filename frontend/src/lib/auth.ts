@@ -2,7 +2,6 @@ import {
   PublicClientApplication,
   type Configuration,
   type AccountInfo,
-  InteractionRequiredAuthError,
 } from "@azure/msal-browser";
 import { env } from "./env";
 import type { Role } from "@/types/common";
@@ -62,17 +61,40 @@ export const msalInstance = new PublicClientApplication(msalConfig);
 export async function acquireApiToken(): Promise<string | null> {
   if (isAuthBypassEnabled) return null;
 
-  const account = msalInstance.getActiveAccount();
+  const account = msalInstance.getActiveAccount() || msalInstance.getAllAccounts()[0];
   if (!account) return null;
-  try {
-    const result = await msalInstance.acquireTokenSilent({ ...loginRequest, account });
-    return result.accessToken;
-  } catch (err) {
-    if (err instanceof InteractionRequiredAuthError) {
-      await msalInstance.acquireTokenRedirect({ ...loginRequest, account });
+
+  // 1. Try with configured apiScope
+  if (env.entra.apiScope) {
+    try {
+      const result = await msalInstance.acquireTokenSilent({
+        scopes: [env.entra.apiScope],
+        account,
+      });
+      if (result?.accessToken) return result.accessToken;
+      if (result?.idToken) return result.idToken;
+    } catch {
+      // Fallback if custom scope fails
     }
-    return null;
   }
+
+  // 2. Try with standard openid scopes
+  try {
+    const result = await msalInstance.acquireTokenSilent({
+      scopes: ["openid", "profile", "email"],
+      account,
+    });
+    if (result?.accessToken) return result.accessToken;
+    if (result?.idToken) return result.idToken;
+  } catch {
+    // Fallback to active account idToken if available
+  }
+
+  if (account.idToken) {
+    return account.idToken;
+  }
+
+  return null;
 }
 
 export async function safeHandleRedirect(): Promise<void> {
@@ -81,6 +103,6 @@ export async function safeHandleRedirect(): Promise<void> {
   if (result?.account) msalInstance.setActiveAccount(result.account);
   if (!msalInstance.getActiveAccount()) {
     const accounts = msalInstance.getAllAccounts();
-    if (accounts.length === 1) msalInstance.setActiveAccount(accounts[0]);
+    if (accounts.length > 0) msalInstance.setActiveAccount(accounts[0]);
   }
 }

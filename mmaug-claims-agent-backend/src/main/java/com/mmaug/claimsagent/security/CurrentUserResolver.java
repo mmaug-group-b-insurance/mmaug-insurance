@@ -87,11 +87,16 @@ public class CurrentUserResolver implements HandlerMethodArgumentResolver {
 
             String name = jwt.getClaimAsString("name");
 
-            if (roles.isEmpty() && userService != null) {
-                try {
-                    roles = userService.getRolesForUser(oid, email, name);
-                } catch (Exception e) {
-                    log.warn("Could not retrieve fallback database roles for oid {}: {}", oid, e.getMessage());
+            if (roles.isEmpty()) {
+                if (userService != null) {
+                    try {
+                        roles = userService.getRolesForUser(oid, email, name);
+                    } catch (Exception e) {
+                        log.warn("Could not retrieve fallback database roles for oid {}: {}", oid, e.getMessage());
+                    }
+                }
+                if (roles == null || roles.isEmpty()) {
+                    roles = Set.of(Role.CLAIMS_OFFICER);
                 }
             }
 
