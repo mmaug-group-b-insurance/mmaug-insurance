@@ -132,7 +132,10 @@ export function LoginPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden flex-col justify-between bg-primary p-10 text-primary-foreground lg:flex">
-        <Link to="/" className="text-lg font-semibold tracking-tight">MMAUG Insurance Claims Agent</Link>
+        <Link to="/" className="flex items-center gap-3 text-lg font-semibold tracking-tight">
+          <img src="/mmaug-logo.png" alt="MMAUG Logo" className="h-9 w-auto object-contain rounded bg-white/10 p-1" />
+          MMAUG Insurance Claims Agent
+        </Link>
         <div className="space-y-4">
           <h1 className="text-3xl font-semibold leading-tight">
             Evidence-linked claims intelligence, with human oversight.
@@ -148,7 +151,10 @@ export function LoginPage() {
       <div className="flex flex-col justify-center px-6 py-12 sm:px-12">
         <div className="mx-auto w-full max-w-sm space-y-6">
           <div className="lg:hidden">
-            <Link to="/" className="text-base font-semibold tracking-tight">MMAUG Insurance Claims Agent</Link>
+            <Link to="/" className="flex items-center gap-2 text-base font-semibold tracking-tight">
+              <img src="/mmaug-logo.png" alt="MMAUG Logo" className="h-8 w-auto object-contain" />
+              MMAUG Insurance Claims Agent
+            </Link>
           </div>
 
           <div>

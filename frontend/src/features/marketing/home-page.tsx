@@ -59,6 +59,12 @@ function Hero() {
           transition={{ duration: 0.5 }}
           className="flex flex-col justify-center"
         >
+          <div className="mb-4 flex items-center gap-2">
+            <img src="/mmaug-logo.png" alt="MMAUG Logo" className="h-7 w-auto object-contain" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Malta Microsoft AI User Group
+            </span>
+          </div>
           <Badge variant="muted" className="w-fit">Decision-support only — never autonomous</Badge>
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
             Process motor claims with traceable evidence and human oversight.

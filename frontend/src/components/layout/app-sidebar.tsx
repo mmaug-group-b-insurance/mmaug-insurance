@@ -29,10 +29,8 @@ const navItems: NavItem[] = [
 
 function Brand() {
   return (
-    <Link to="/app" className="flex items-center gap-2 px-2">
-      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-        M
-      </div>
+    <Link to="/app" className="flex items-center gap-2.5 px-2">
+      <img src="/mmaug-logo.png" alt="MMAUG Logo" className="h-8 w-auto object-contain" />
       <span className="text-sm font-semibold tracking-tight">MMAUG Claims</span>
     </Link>
   );
@@ -88,9 +86,7 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
     <div className="flex h-full flex-col">
       <div className={cn("flex h-16 items-center border-b", collapsed ? "justify-center px-2" : "px-2")}>
         {collapsed ? (
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-            M
-          </div>
+          <img src="/mmaug-logo.png" alt="MMAUG Logo" className="h-8 w-auto object-contain" />
         ) : (
           <Brand />
         )}

@@ -26,10 +26,8 @@ const portalTo = isAuthenticated ? "/app" : "/login";
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container-page flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-              M
-            </div>
+          <Link to="/" className="flex items-center gap-2.5">
+            <img src="/mmaug-logo.png" alt="MMAUG Logo" className="h-8 w-auto object-contain" />
             <span className="hidden text-sm font-semibold tracking-tight sm:inline">MMAUG Claims Agent</span>
           </Link>
 
@@ -108,8 +106,8 @@ const portalTo = isAuthenticated ? "/app" : "/login";
       <footer className="border-t bg-muted/30">
         <div className="container-page grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">M</div>
+            <div className="flex items-center gap-2.5">
+              <img src="/mmaug-logo.png" alt="MMAUG Logo" className="h-8 w-auto object-contain" />
               <span className="text-sm font-semibold">MMAUG Claims Agent</span>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
