@@ -58,43 +58,85 @@ export const loginRequest = {
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
+function getCachedToken(account: AccountInfo): string | null {
+  if ((account as { idToken?: string }).idToken) {
+    return (account as { idToken?: string }).idToken!;
+  }
+  try {
+    let fallbackIdToken: string | null = null;
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (!key) continue;
+      if (key.includes(account.homeAccountId)) {
+        if (key.includes("accesstoken")) {
+          const item = sessionStorage.getItem(key);
+          if (item) {
+            const parsed = JSON.parse(item);
+            if (parsed.secret) return parsed.secret;
+          }
+        } else if (key.includes("idtoken")) {
+          const item = sessionStorage.getItem(key);
+          if (item) {
+            const parsed = JSON.parse(item);
+            if (parsed.secret) fallbackIdToken = parsed.secret;
+          }
+        }
+      }
+    }
+    if (fallbackIdToken) return fallbackIdToken;
+  } catch {
+    // Ignore storage access/parse errors
+  }
+  return null;
+}
+
+const withTimeout = <T>(promise: Promise<T>, ms = 2000): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("Token silent timeout")), ms)),
+  ]);
+
 export async function acquireApiToken(): Promise<string | null> {
   if (isAuthBypassEnabled) return null;
 
   const account = msalInstance.getActiveAccount() || msalInstance.getAllAccounts()[0];
   if (!account) return null;
 
-  // 1. Try with configured apiScope
+  // 1. Check local session cache first (instant, 0ms)
+  const cached = getCachedToken(account);
+  if (cached) return cached;
+
+  // 2. Try silent acquisition with apiScope
   if (env.entra.apiScope) {
     try {
-      const result = await msalInstance.acquireTokenSilent({
-        scopes: [env.entra.apiScope],
-        account,
-      });
+      const result = await withTimeout(
+        msalInstance.acquireTokenSilent({
+          scopes: [env.entra.apiScope],
+          account,
+        })
+      );
       if (result?.accessToken) return result.accessToken;
       if (result?.idToken) return result.idToken;
     } catch {
-      // Fallback if custom scope fails
+      // Fallback if custom scope fails or times out
     }
   }
 
-  // 2. Try with standard openid scopes
+  // 3. Try standard openid scopes
   try {
-    const result = await msalInstance.acquireTokenSilent({
-      scopes: ["openid", "profile", "email"],
-      account,
-    });
+    const result = await withTimeout(
+      msalInstance.acquireTokenSilent({
+        scopes: ["openid", "profile", "email"],
+        account,
+      })
+    );
     if (result?.accessToken) return result.accessToken;
     if (result?.idToken) return result.idToken;
   } catch {
-    // Fallback to active account idToken if available
+    // Fallback
   }
 
-  if (account.idToken) {
-    return account.idToken;
-  }
-
-  return null;
+  return getCachedToken(account);
 }
 
 export async function safeHandleRedirect(): Promise<void> {

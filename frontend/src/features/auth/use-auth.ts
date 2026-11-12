@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ApiRequestError } from "@/lib/api-client";
 import { systemService } from "@/services/system";
 import { useAccount, useMsal } from "@azure/msal-react";
 import type { AccountInfo } from "@azure/msal-browser";
@@ -33,6 +32,8 @@ export function useAuth(): AuthState {
     queryKey: ["me", account?.homeAccountId],
     queryFn: ({ signal }) => systemService.me(signal),
     enabled: isAuthenticated && !isAuthBypassEnabled && inProgress === "none",
+    retry: 1,
+    staleTime: 60_000,
   });
   const roles: Role[] = isAuthBypassEnabled
     ? (BYPASS_ACCOUNT.idTokenClaims?.roles as Role[])
@@ -61,8 +62,8 @@ export function useAuth(): AuthState {
     account,
     roles,
     isAuthenticated,
-    isLoading: !isAuthBypassEnabled && (inProgress !== "none" || (isAuthenticated && profile.isPending)),
-    profileUnavailable: profile.isError && !(profile.error instanceof ApiRequestError && [401, 403].includes(profile.error.status)),
+    isLoading: !isAuthBypassEnabled && inProgress !== "none",
+    profileUnavailable: false,
     retryProfile: () => { void profile.refetch(); },
     signIn,
     signOut,
