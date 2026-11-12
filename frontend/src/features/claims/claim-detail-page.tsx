@@ -26,6 +26,23 @@ export function ClaimDetailPage() {
   const { id, tab } = useParams<{ id: string; tab?: string }>();
   const navigate = useNavigate();
   const { hasRole } = useAuth();
+  const queryClient = useQueryClient();
+
+  const analyseMutation = useMutation({
+    mutationFn: () => claimsService.analyse(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["claim", id] });
+      queryClient.invalidateQueries({ queryKey: ["claim-summary", id] });
+      queryClient.invalidateQueries({ queryKey: ["claim-summary-versions", id] });
+      queryClient.invalidateQueries({ queryKey: ["claim-findings", id] });
+      queryClient.invalidateQueries({ queryKey: ["claim-runs", id] });
+      toast.success("Analysis complete", { description: "Grounded summary and findings generated." });
+      navigate(`/app/claims/${id}/summary`);
+    },
+    onError: (err) => {
+      toast.error("Analysis failed", { description: (err as Error).message });
+    },
+  });
 
   const activeTab: ClaimTabKey = useMemo(() => {
     if (!tab) return "overview";
@@ -72,41 +89,24 @@ export function ClaimDetailPage() {
   if (!claim) return <Navigate to="/app/claims" replace />;
 
   if (!claim.id) {
-  return (
-    <>
-      <Button variant="ghost" onClick={() => navigate("/app/claims")} className="mb-4">
-        <ArrowLeft /> Back to claims
-      </Button>
-      <Alert variant="destructive">
-        <AlertTriangle />
-        <AlertTitle>Malformed claim response</AlertTitle>
-        <AlertDescription>
-          The backend returned a claim without an id. Check the browser network tab for the raw response.
-        </AlertDescription>
-      </Alert>
-    </>
-  );
-}
+    return (
+      <>
+        <Button variant="ghost" onClick={() => navigate("/app/claims")} className="mb-4">
+          <ArrowLeft /> Back to claims
+        </Button>
+        <Alert variant="destructive">
+          <AlertTriangle />
+          <AlertTitle>Malformed claim response</AlertTitle>
+          <AlertDescription>
+            The backend returned a claim without an id. Check the browser network tab for the raw response.
+          </AlertDescription>
+        </Alert>
+      </>
+    );
+  }
 
   const canReview = hasRole(["CLAIMS_OFFICER"]);
   const canAnalyse = hasRole(["CLAIMS_OFFICER"]);
-
-  const queryClient = useQueryClient();
-  const analyseMutation = useMutation({
-    mutationFn: () => claimsService.analyse(id!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["claim", id] });
-      queryClient.invalidateQueries({ queryKey: ["claim-summary", id] });
-      queryClient.invalidateQueries({ queryKey: ["claim-summary-versions", id] });
-      queryClient.invalidateQueries({ queryKey: ["claim-findings", id] });
-      queryClient.invalidateQueries({ queryKey: ["claim-runs", id] });
-      toast.success("Analysis complete", { description: "Grounded summary and findings generated." });
-      navigate(`/app/claims/${id}/summary`);
-    },
-    onError: (err) => {
-      toast.error("Analysis failed", { description: (err as Error).message });
-    },
-  });
 
   return (
     <>
