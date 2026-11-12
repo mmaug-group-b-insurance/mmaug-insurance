@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { AlertTriangle, ArrowLeft, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -90,6 +91,23 @@ export function ClaimDetailPage() {
   const canReview = hasRole(["CLAIMS_OFFICER"]);
   const canAnalyse = hasRole(["CLAIMS_OFFICER"]);
 
+  const queryClient = useQueryClient();
+  const analyseMutation = useMutation({
+    mutationFn: () => claimsService.analyse(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["claim", id] });
+      queryClient.invalidateQueries({ queryKey: ["claim-summary", id] });
+      queryClient.invalidateQueries({ queryKey: ["claim-summary-versions", id] });
+      queryClient.invalidateQueries({ queryKey: ["claim-findings", id] });
+      queryClient.invalidateQueries({ queryKey: ["claim-runs", id] });
+      toast.success("Analysis complete", { description: "Grounded summary and findings generated." });
+      navigate(`/app/claims/${id}/summary`);
+    },
+    onError: (err) => {
+      toast.error("Analysis failed", { description: (err as Error).message });
+    },
+  });
+
   return (
     <>
       <Button variant="ghost" size="sm" onClick={() => navigate("/app/claims")} className="mb-4">
@@ -101,12 +119,21 @@ export function ClaimDetailPage() {
         description={claim.claimantName}
         actions={
           canAnalyse && (
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/app/claims/${claim.id}/summary`)}
-            >
-              <Bot /> View AI summary
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => analyseMutation.mutate()}
+                disabled={analyseMutation.isPending}
+              >
+                <Bot className="h-4 w-4" />
+                {analyseMutation.isPending ? "Analysing…" : "Run analysis"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/app/claims/${claim.id}/summary`)}
+              >
+                View summary
+              </Button>
+            </div>
           )
         }
       />

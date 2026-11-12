@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { AlertTriangle, Bot, CheckCircle2, RefreshCcw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { summariesService } from "@/services/summaries";
+import { claimsService } from "@/services/claims";
 import { StatementItem } from "@/features/summary/statement-item";
 import { FactVsAiLegend } from "@/features/summary/fact-vs-ai-legend";
 import { useAuth } from "@/features/auth/use-auth";
@@ -20,6 +22,22 @@ export function ClaimSummaryTab({ claim }: { claim: Claim }) {
   const [version, setVersion] = useState<number | undefined>(undefined);
   const { hasRole } = useAuth();
   const canView = hasRole(["CLAIMS_OFFICER", "AUDITOR", "ADMIN", "CLAIMANT"]);
+  const qc = useQueryClient();
+
+  const analyseMutation = useMutation({
+    mutationFn: () => claimsService.analyse(claim.id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["claim", claim.id] });
+      qc.invalidateQueries({ queryKey: ["claim-summary", claim.id] });
+      qc.invalidateQueries({ queryKey: ["claim-summary-versions", claim.id] });
+      qc.invalidateQueries({ queryKey: ["claim-findings", claim.id] });
+      qc.invalidateQueries({ queryKey: ["claim-runs", claim.id] });
+      toast.success("Analysis complete", { description: "Grounded summary and findings generated." });
+    },
+    onError: (err) => {
+      toast.error("Analysis failed", { description: (err as Error).message });
+    },
+  });
 
   const versionsQuery = useQuery({
     queryKey: ["claim-summary-versions", claim.id],
@@ -57,6 +75,14 @@ export function ClaimSummaryTab({ claim }: { claim: Claim }) {
           icon={Bot}
           title="No summary generated yet"
           description="An officer must trigger the analysis pipeline before a summary is available."
+          action={
+            hasRole(["CLAIMS_OFFICER"]) ? (
+              <Button onClick={() => analyseMutation.mutate()} disabled={analyseMutation.isPending}>
+                <Bot className="h-4 w-4" />
+                {analyseMutation.isPending ? "Analysing claim…" : "Run analysis"}
+              </Button>
+            ) : undefined
+          }
         />
       );
     }
@@ -95,6 +121,12 @@ export function ClaimSummaryTab({ claim }: { claim: Claim }) {
                   ))}
                 </SelectContent>
               </Select>
+            )}
+            {hasRole(["CLAIMS_OFFICER"]) && (
+              <Button size="sm" variant="outline" onClick={() => analyseMutation.mutate()} disabled={analyseMutation.isPending}>
+                <Bot className="h-4 w-4" />
+                {analyseMutation.isPending ? "Analysing…" : "Re-run analysis"}
+              </Button>
             )}
             <Button variant="ghost" size="icon" onClick={() => summaryQuery.refetch()} aria-label="Refresh">
               <RefreshCcw />
