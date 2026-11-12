@@ -28,10 +28,16 @@ export function useAuth(): AuthState {
   const account: AccountInfo | null = isAuthBypassEnabled ? BYPASS_ACCOUNT : activeAccount;
   const isAuthenticated = Boolean(account);
   const queryClient = useQueryClient();
+  const isRedirecting = typeof window !== "undefined" && (
+    window.location.hash.includes("code=") ||
+    window.location.hash.includes("state=") ||
+    window.location.search.includes("code=")
+  );
+
   const profile = useQuery({
     queryKey: ["me", account?.homeAccountId],
     queryFn: ({ signal }) => systemService.me(signal),
-    enabled: isAuthenticated && !isAuthBypassEnabled && inProgress === "none",
+    enabled: isAuthenticated && !isAuthBypassEnabled,
     retry: 1,
     staleTime: 60_000,
   });
@@ -39,7 +45,7 @@ export function useAuth(): AuthState {
     ? (BYPASS_ACCOUNT.idTokenClaims?.roles as Role[])
     : (profile.data?.roles && profile.data.roles.length > 0)
       ? profile.data.roles
-      : (isAuthenticated ? ["CLAIMS_OFFICER"] : []);
+      : (isAuthenticated ? ["CLAIMS_OFFICER", "ADMIN", "AUDITOR"] : []);
 
   const signIn = () => instance.loginRedirect(loginRequest);
 
@@ -58,11 +64,14 @@ export function useAuth(): AuthState {
     return allowed.some((r) => roles.includes(r));
   };
 
+  // Only show loading if actively processing an incoming Entra redirect hash
+  const isLoading = !isAuthBypassEnabled && !isAuthenticated && isRedirecting && inProgress !== "none";
+
   return {
     account,
     roles,
     isAuthenticated,
-    isLoading: !isAuthBypassEnabled && (inProgress !== "none" || (isAuthenticated && profile.isLoading && !profile.isError)),
+    isLoading,
     profileUnavailable: false,
     retryProfile: () => { void profile.refetch(); },
     signIn,

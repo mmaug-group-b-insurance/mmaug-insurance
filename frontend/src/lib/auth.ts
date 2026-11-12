@@ -58,8 +58,23 @@ export const loginRequest = {
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
+function isJwtExpired(token: string): boolean {
+  try {
+    const parts = token.split(".");
+    if (parts.length < 2) return false;
+    const payload = JSON.parse(atob(parts[1]));
+    if (!payload.exp) return false;
+    return payload.exp <= Math.floor(Date.now() / 1000) + 30;
+  } catch {
+    return false;
+  }
+}
+
 function getCachedToken(account: AccountInfo): string | null {
-  const now = Math.floor(Date.now() / 1000);
+  if ((account as { idToken?: string }).idToken) {
+    const t = (account as { idToken?: string }).idToken!;
+    if (!isJwtExpired(t)) return t;
+  }
   try {
     let fallbackIdToken: string | null = null;
     for (let i = 0; i < sessionStorage.length; i++) {
@@ -70,8 +85,7 @@ function getCachedToken(account: AccountInfo): string | null {
           const item = sessionStorage.getItem(key);
           if (item) {
             const parsed = JSON.parse(item);
-            const exp = Number(parsed.expires_on || 0);
-            if (parsed.secret && (!exp || exp > now + 60)) {
+            if (parsed.secret && !isJwtExpired(parsed.secret)) {
               return parsed.secret;
             }
           }
@@ -79,8 +93,7 @@ function getCachedToken(account: AccountInfo): string | null {
           const item = sessionStorage.getItem(key);
           if (item) {
             const parsed = JSON.parse(item);
-            const exp = Number(parsed.expires_on || 0);
-            if (parsed.secret && (!exp || exp > now + 60)) {
+            if (parsed.secret && !isJwtExpired(parsed.secret)) {
               fallbackIdToken = parsed.secret;
             }
           }
