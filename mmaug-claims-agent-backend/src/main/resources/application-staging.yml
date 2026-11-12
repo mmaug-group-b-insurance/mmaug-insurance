@@ -21,11 +21,13 @@ app:
   storage:
     provider: azure
     endpoint: ${STORAGE_BLOB_ENDPOINT}
+    account-key: ${STORAGE_ACCOUNT_KEY:}
     managed-identity-client-id: ${STORAGE_MANAGED_IDENTITY_CLIENT_ID:}
   scanner:
     provider: defender-queue
     queue-endpoint: ${DEFENDER_QUEUE_ENDPOINT}
     expected-topic: ${DEFENDER_EXPECTED_TOPIC}
+    auto-clean: ${APP_SCANNER_AUTO_CLEAN:true}
     poll-ms: 30000
 springdoc:
   api-docs:

@@ -62,7 +62,7 @@ export function useAuth(): AuthState {
     account,
     roles,
     isAuthenticated,
-    isLoading: !isAuthBypassEnabled && inProgress !== "none",
+    isLoading: !isAuthBypassEnabled && (inProgress !== "none" || (isAuthenticated && profile.isLoading && !profile.isError)),
     profileUnavailable: false,
     retryProfile: () => { void profile.refetch(); },
     signIn,

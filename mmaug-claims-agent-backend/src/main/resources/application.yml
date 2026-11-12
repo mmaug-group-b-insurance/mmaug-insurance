@@ -89,6 +89,7 @@ app:
       analyse-per-minute: 5
   storage:
     account-name: ${STORAGE_ACCOUNT_NAME:}
+    account-key: ${STORAGE_ACCOUNT_KEY:}
     quarantine-container: ${STORAGE_QUARANTINE_CONTAINER:quarantine}
     clean-container: ${STORAGE_CLEAN_CONTAINER:clean}
     max-file-size-mb: 15
