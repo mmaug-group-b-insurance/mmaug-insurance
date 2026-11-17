@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/mmaug_claims
     username: postgres
-    password: adedeji1127
+    password: ${DB_PASSWORD}
   jpa:
     show-sql: true
     properties:
