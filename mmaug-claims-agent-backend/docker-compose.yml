@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: mmaug_claims
       POSTGRES_USER: mmaug
-      POSTGRES_PASSWORD: mmaug
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD before starting Compose}
     ports:
       - "5432:5432"
     volumes:
@@ -28,7 +28,7 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       DB_URL: jdbc:postgresql://postgres:5432/mmaug_claims
       DB_USERNAME: kingz1127
-      DB_PASSWORD: adedeji1127
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD before starting Compose}
       ENTRA_ISSUER_URI: ${ENTRA_ISSUER_URI:-}
       ENTRA_AUDIENCE: ${ENTRA_AUDIENCE:-api://mmaug-claims-api}
       STORAGE_PATH: /app/storage
